@@ -1,0 +1,894 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="ECEN 2714 Lab 5 Frequency Response Plotter" />
+  <title>ECEN 2714 Frequency Response Plotter</title>
+  <style>
+    :root {
+      --osu-orange: #fe5c00;
+      --ink: #151515;
+      --muted: #666;
+      --line: #d8d8d8;
+      --panel: #ffffff;
+      --page: #f4f4f4;
+      --ok: #176b34;
+      --warn: #8a5200;
+      --bad: #a11a1a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--page);
+      color: var(--ink);
+    }
+    header {
+      background: var(--ink);
+      color: white;
+      border-top: 8px solid var(--osu-orange);
+      padding: 22px 24px;
+    }
+    header .wrap { max-width: 1200px; margin: 0 auto; }
+    header h1 { margin: 0 0 5px; font-size: clamp(1.55rem, 3vw, 2.25rem); }
+    header p { margin: 0; color: #ddd; }
+    main { max-width: 1200px; margin: 24px auto 48px; padding: 0 18px; }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.04);
+    }
+    h2 { margin-top: 0; font-size: 1.3rem; }
+    h3 { margin-bottom: .45rem; }
+    .step-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .step {
+      border-left: 4px solid var(--osu-orange);
+      background: #fafafa;
+      padding: 10px 12px;
+      min-height: 72px;
+    }
+    .step b { display:block; margin-bottom:4px; }
+    .toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+    button, .file-label {
+      appearance: none;
+      border: 0;
+      border-radius: 7px;
+      padding: 10px 14px;
+      font-size: .98rem;
+      cursor: pointer;
+      font-weight: 700;
+      background: var(--osu-orange);
+      color: white;
+    }
+    button.secondary, .file-label.secondary { background: #333; }
+    button.light { background: #ededed; color: #222; border: 1px solid #ccc; }
+    button:disabled { opacity: .45; cursor: not-allowed; }
+    input[type=file] { position:absolute; left:-9999px; }
+    .dropzone {
+      border: 2px dashed #aaa;
+      border-radius: 10px;
+      padding: 28px 16px;
+      text-align: center;
+      margin: 14px 0;
+      background: #fcfcfc;
+      transition: .15s ease;
+    }
+    .dropzone.drag { border-color: var(--osu-orange); background: #fff5ef; }
+    .filename { font-weight: 700; margin-top: 8px; }
+    .small { font-size: .9rem; color: var(--muted); }
+    code { background: #f1f1f1; padding: 2px 5px; border-radius: 4px; }
+    .messages { margin-top: 12px; display: grid; gap: 8px; }
+    .msg { padding: 10px 12px; border-radius: 7px; border-left: 4px solid; }
+    .msg.ok { background:#eef8f1; border-color:var(--ok); color:#123d20; }
+    .msg.warn { background:#fff7e8; border-color:#d28a00; color:#654000; }
+    .msg.bad { background:#fff0f0; border-color:var(--bad); color:#741010; }
+    .hidden { display:none !important; }
+    .results-grid {
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 14px;
+    }
+    .result-box { border:1px solid var(--line); border-radius:9px; padding:14px; }
+    .result-box h3 { margin-top:0; }
+    .metric { display:flex; justify-content:space-between; gap:20px; padding:7px 0; border-bottom:1px solid #eee; }
+    .metric:last-child { border-bottom:0; }
+    .metric .value { font-weight:700; font-variant-numeric: tabular-nums; text-align:right; }
+    .plot-card { overflow-x:auto; }
+    .plot-wrap { min-width: 720px; }
+    svg.plot { width:100%; height:auto; display:block; background:white; }
+    .plot-actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:12px; }
+    .option-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; margin:14px 0 16px; }
+    .option-group { border:1px solid var(--line); border-radius:10px; padding:14px; background:#fcfcfc; }
+    .option-group h3 { margin:0 0 10px; font-size:1rem; }
+    .radio-stack { display:grid; gap:8px; }
+    .radio-card { display:flex; gap:9px; align-items:flex-start; padding:9px 10px; border:1px solid #ddd; border-radius:8px; background:white; cursor:pointer; }
+    .radio-card:hover { border-color:#aaa; }
+    .radio-card input { margin-top:2px; accent-color:var(--osu-orange); }
+    .radio-card span { line-height:1.25; }
+    .radio-card small { display:block; color:var(--muted); margin-top:2px; }
+    .radio-card.disabled { opacity:.5; cursor:not-allowed; background:#f3f3f3; }
+    .panel-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; margin-top:12px; }
+    .panel-plot { border:1px solid var(--line); border-radius:9px; padding:8px; background:white; overflow:hidden; }
+    .panel-plot svg { width:100%; height:auto; display:block; }
+    .plot-summary { margin-top:10px; padding:10px 12px; background:#fafafa; border-left:4px solid var(--osu-orange); font-size:.92rem; }
+    table { border-collapse:collapse; width:100%; font-size:.9rem; }
+    th, td { border-bottom:1px solid #e5e5e5; padding:7px 8px; text-align:right; }
+    th:first-child, td:first-child { text-align:left; }
+    th { background:#f8f8f8; position:sticky; top:0; }
+    .table-scroll { max-height:330px; overflow:auto; border:1px solid var(--line); border-radius:8px; }
+    footer { text-align:center; color:#777; font-size:.85rem; margin-top:26px; }
+    @media (max-width: 700px) {
+      .card { padding:15px; }
+      .toolbar > * { width:100%; text-align:center; }
+      .option-grid, .panel-grid { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>ECEN 2714 Frequency Response Plotter</h1>
+    <p>Lab 5 · TL072 inverting and non-inverting amplifier measurements</p>
+  </div>
+</header>
+
+<main>
+  <section class="card">
+    <h2>How to use this tool</h2>
+    <div class="step-grid">
+      <div class="step"><b>1. Record data</b>Enter your measured frequency, input/output Vpp, and phase values in the CSV template.</div>
+      <div class="step"><b>2. Upload CSV</b>Choose or drag your CSV file into this page. Your file is processed locally in your browser.</div>
+      <div class="step"><b>3. Check crossings</b>Use the preliminary plots to identify where extra refinement measurements are needed.</div>
+      <div class="step"><b>4. Export figures</b>Upload the updated CSV and download the final magnitude and phase plots for your report.</div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Upload measurement data</h2>
+    <p class="small"><code>Frequency_Hz</code> is required. Recommended measurement columns are <code>Vin_Vpp</code>, <code>Vout_Inv_Vpp</code>, <code>Phase_Inv_deg</code>, <code>Vout_NonInv_Vpp</code>, and <code>Phase_NonInv_deg</code>. If optional columns are missing, the tool will plot whatever valid data are available.</p>
+
+    <div class="toolbar">
+      <label for="csvFile" class="file-label">Choose CSV File</label>
+      <input id="csvFile" type="file" accept=".csv,text/csv" />
+      <button id="demoBtn" class="secondary" type="button">Load Demo Data</button>
+      <button id="templateBtn" class="light" type="button">Download CSV Template</button>
+      <button id="resetBtn" class="light" type="button">Reset</button>
+    </div>
+
+    <div id="dropzone" class="dropzone">
+      <div><b>Drag and drop a CSV file here</b></div>
+      <div class="small">or use “Choose CSV File” above</div>
+      <div id="filename" class="filename"></div>
+    </div>
+
+    <div id="messages" class="messages"></div>
+  </section>
+
+  <section id="plotOptionsSection" class="card hidden">
+    <h2>Choose what to plot</h2>
+    <p class="small">Select the response, circuit(s), and layout you want. Magnitude and phase use separate axes; “overlay” means placing both circuits on the same response graph.</p>
+    <div id="availabilityNote" class="msg warn hidden" style="margin-bottom:14px"></div>
+
+    <div class="option-grid">
+      <div class="option-group">
+        <h3>1. Response</h3>
+        <div class="radio-stack">
+          <label id="responseMagLabel" class="radio-card"><input type="radio" name="responseChoice" value="mag"><span><b>Magnitude only</b><small>Gain magnitude in dB vs. frequency</small></span></label>
+          <label id="responsePhaseLabel" class="radio-card"><input type="radio" name="responseChoice" value="phase"><span><b>Phase only</b><small>Phase in degrees vs. frequency</small></span></label>
+          <label id="responseBothLabel" class="radio-card"><input type="radio" name="responseChoice" value="both" checked><span><b>Magnitude + Phase</b><small>Generate both response types</small></span></label>
+        </div>
+      </div>
+
+      <div class="option-group">
+        <h3>2. Circuit</h3>
+        <div class="radio-stack">
+          <label id="circuitInvLabel" class="radio-card"><input type="radio" name="circuitChoice" value="inv"><span><b>Inverting only</b><small>Use the inverting amplifier measurements</small></span></label>
+          <label id="circuitNonLabel" class="radio-card"><input type="radio" name="circuitChoice" value="non"><span><b>Non-inverting only</b><small>Use the non-inverting amplifier measurements</small></span></label>
+          <label id="circuitBothLabel" class="radio-card"><input type="radio" name="circuitChoice" value="both" checked><span><b>Both circuits</b><small>Compare both amplifier configurations</small></span></label>
+        </div>
+      </div>
+
+      <div class="option-group">
+        <h3>3. Layout</h3>
+        <div class="radio-stack">
+          <label id="overlayLabel" class="radio-card"><input id="layoutOverlay" type="radio" name="layoutChoice" value="overlay" checked><span><b>Overlay circuits</b><small>Same graph for both circuits, one graph per response type</small></span></label>
+          <label id="separateLabel" class="radio-card"><input id="layoutSeparate" type="radio" name="layoutChoice" value="separate"><span><b>Separate panels</b><small>Uses a 2×2 window when both responses and both circuits are selected</small></span></label>
+        </div>
+        <div id="layoutHint" class="small" style="margin-top:9px"></div>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <button id="generatePlotsBtn" type="button">Generate Selected Plots</button>
+    </div>
+  </section>
+
+  <section id="resultsSection" class="card hidden">
+    <h2>Calculated results</h2>
+    <p class="small">Low-frequency gain is estimated from the median of the first three frequency points. Crossing frequencies are interpolated linearly in dB versus log-frequency.</p>
+    <div class="results-grid">
+      <div id="invResultBox" class="result-box">
+        <h3>Inverting amplifier</h3>
+        <div class="metric"><span>Low-frequency gain</span><span id="invG0" class="value">—</span></div>
+        <div class="metric"><span>−3 dB level</span><span id="inv3Level" class="value">—</span></div>
+        <div class="metric"><span>Estimated <i>f</i><sub>3dB</sub></span><span id="invF3" class="value">—</span></div>
+        <div class="metric"><span>Estimated unity-gain frequency</span><span id="invFu" class="value">—</span></div>
+      </div>
+      <div id="nonResultBox" class="result-box">
+        <h3>Non-inverting amplifier</h3>
+        <div class="metric"><span>Low-frequency gain</span><span id="nonG0" class="value">—</span></div>
+        <div class="metric"><span>−3 dB level</span><span id="non3Level" class="value">—</span></div>
+        <div class="metric"><span>Estimated <i>f</i><sub>3dB</sub></span><span id="nonF3" class="value">—</span></div>
+        <div class="metric"><span>Estimated unity-gain frequency</span><span id="nonFu" class="value">—</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="magSection" class="card plot-card hidden">
+    <h2>Magnitude response</h2>
+    <div class="plot-wrap"><svg id="magPlot" class="plot" viewBox="0 0 1000 600" role="img" aria-label="Magnitude response plot"></svg></div>
+    <div class="plot-actions">
+      <button id="magPngBtn" type="button">Download Magnitude PNG</button>
+      <button id="processedBtn" class="secondary" type="button">Download Processed CSV</button>
+    </div>
+  </section>
+
+  <section id="phaseSection" class="card plot-card hidden">
+    <h2>Phase response</h2>
+    <div class="plot-wrap"><svg id="phasePlot" class="plot" viewBox="0 0 1000 600" role="img" aria-label="Phase response plot"></svg></div>
+    <div class="plot-actions">
+      <button id="phasePngBtn" type="button">Download Phase PNG</button>
+    </div>
+  </section>
+
+  <section id="panelSection" class="card plot-card hidden">
+    <h2 id="panelTitle">Separate plots</h2>
+    <div id="panelGrid" class="panel-grid"></div>
+    <div id="panelSummary" class="plot-summary"></div>
+    <div class="plot-actions">
+      <button id="panelPngBtn" type="button">Download Multi-Panel PNG</button>
+      <button id="panelProcessedBtn" class="secondary" type="button">Download Processed CSV</button>
+    </div>
+  </section>
+
+  <section id="dataSection" class="card hidden">
+    <h2>Processed data</h2>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Frequency</th><th>Vin Vpp</th><th>Inv Vout Vpp</th><th>Inv |Av|</th><th>Inv Gain dB</th><th>Inv Phase</th><th>Non-inv Vout Vpp</th><th>Non-inv |Av|</th><th>Non-inv Gain dB</th><th>Non-inv Phase</th>
+          </tr>
+        </thead>
+        <tbody id="dataBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>ECEN 2714 · Files are processed locally in your browser and are not uploaded by this page.</footer>
+</main>
+
+<script>
+(() => {
+  'use strict';
+
+  const REQUIRED = [
+    'Frequency_Hz','Vin_Vpp','Vout_Inv_Vpp','Phase_Inv_deg','Vout_NonInv_Vpp','Phase_NonInv_deg'
+  ];
+
+  const DEMO_CSV = `Frequency_Hz,Vin_Vpp,Vout_Inv_Vpp,Phase_Inv_deg,Vout_NonInv_Vpp,Phase_NonInv_deg
+100,0.200,2.000,179.98,2.200,-0.02
+300,0.200,2.000,179.94,2.200,-0.06
+1000,0.200,2.000,179.79,2.200,-0.21
+3000,0.200,2.000,179.37,2.200,-0.63
+10000,0.200,1.999,177.90,2.199,-2.10
+30000,0.200,1.988,173.72,2.187,-6.28
+100000,0.200,1.878,159.86,2.066,-20.14
+150000,0.200,1.752,151.19,1.927,-28.81
+200000,0.200,1.613,143.75,1.774,-36.25
+250000,0.200,1.475,137.49,1.623,-42.51
+270000,0.200,1.421,135.28,1.563,-44.72
+300000,0.200,1.345,132.27,1.480,-47.73
+400000,0.200,1.127,124.29,1.240,-55.71
+600000,0.200,0.828,114.44,0.911,-65.56
+1000000,0.200,0.526,105.26,0.579,-74.74
+1500000,0.200,0.358,100.30,0.394,-79.70
+2000000,0.200,0.270,97.77,0.297,-82.23
+2500000,0.200,0.217,96.23,0.239,-83.77
+2700000,0.200,0.201,95.77,0.221,-84.23
+2800000,0.200,0.194,95.56,0.213,-84.44
+3000000,0.200,0.181,95.19,0.199,-84.81
+3200000,0.200,0.170,94.87,0.187,-85.13
+4000000,0.200,0.136,93.90,0.150,-86.10
+5000000,0.200,0.109,93.12,0.120,-86.88`;
+
+  let currentData = [];
+  let currentAnalysis = null;
+  let currentCapabilities = null;
+  let currentMissingColumns = [];
+  let currentPlotConfig = { response:'both', circuit:'both', layout:'overlay' };
+  let currentPanelSvgs = [];
+
+  const $ = id => document.getElementById(id);
+  const fileInput = $('csvFile');
+  const dropzone = $('dropzone');
+  const filename = $('filename');
+  const messages = $('messages');
+
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+  }
+
+  function addMessage(text, type='ok') {
+    const d = document.createElement('div');
+    d.className = `msg ${type}`;
+    d.innerHTML = text;
+    messages.appendChild(d);
+  }
+
+  function clearMessages() { messages.innerHTML = ''; }
+
+  function parseCSV(text) {
+    const rows = [];
+    let row = [], field = '', quoted = false;
+    for (let i=0; i<text.length; i++) {
+      const ch = text[i];
+      if (ch === '"') {
+        if (quoted && text[i+1] === '"') { field += '"'; i++; }
+        else quoted = !quoted;
+      } else if (ch === ',' && !quoted) {
+        row.push(field.trim()); field = '';
+      } else if ((ch === '\n' || ch === '\r') && !quoted) {
+        if (ch === '\r' && text[i+1] === '\n') i++;
+        row.push(field.trim()); field = '';
+        if (row.some(v => v !== '')) rows.push(row);
+        row = [];
+      } else field += ch;
+    }
+    if (field.length || row.length) {
+      row.push(field.trim());
+      if (row.some(v => v !== '')) rows.push(row);
+    }
+    return rows;
+  }
+
+  function validateAndProcess(text) {
+    const rows = parseCSV(text);
+    if (rows.length < 2) throw new Error('The CSV must contain a header row and at least one data row.');
+    const header = rows[0].map(h => h.replace(/^\uFEFF/, '').trim());
+    if (!header.includes('Frequency_Hz')) throw new Error('Missing Frequency_Hz. A frequency column is required for every plot.');
+
+    const missing = REQUIRED.filter(h => !header.includes(h));
+    const idx = Object.fromEntries(REQUIRED.filter(h => header.includes(h)).map(h => [h, header.indexOf(h)]));
+    const data = [];
+    const issues = [];
+
+    rows.slice(1).forEach((r, j) => {
+      if (r.every(v => String(v).trim()==='')) return;
+      const line = j + 2;
+      const rawF = r[idx.Frequency_Hz];
+      const f = Number(rawF);
+      if (!Number.isFinite(f) || f <= 0) {
+        issues.push(`Row ${line}: Frequency_Hz must be a positive number.`);
+        return;
+      }
+
+      const vals = { Frequency_Hz:f };
+      for (const h of REQUIRED.slice(1)) {
+        if (!(h in idx)) { vals[h] = NaN; continue; }
+        const raw = String(r[idx[h]] ?? '').trim();
+        if (raw === '') { vals[h] = NaN; continue; }
+        const v = Number(raw);
+        if (!Number.isFinite(v)) {
+          vals[h] = NaN;
+          issues.push(`Row ${line}: ${h} is nonnumeric and was ignored.`);
+        } else vals[h] = v;
+      }
+
+      if (Number.isFinite(vals.Vin_Vpp) && vals.Vin_Vpp <= 0) {
+        issues.push(`Row ${line}: Vin_Vpp must be greater than 0 V; magnitude values for this row were ignored.`);
+        vals.Vin_Vpp = NaN;
+      }
+      for (const h of ['Vout_Inv_Vpp','Vout_NonInv_Vpp']) {
+        if (Number.isFinite(vals[h]) && vals[h] < 0) {
+          issues.push(`Row ${line}: ${h} cannot be negative; that value was ignored.`);
+          vals[h] = NaN;
+        }
+      }
+
+      const invAv = Number.isFinite(vals.Vin_Vpp) && Number.isFinite(vals.Vout_Inv_Vpp)
+        ? vals.Vout_Inv_Vpp / vals.Vin_Vpp : NaN;
+      const nonAv = Number.isFinite(vals.Vin_Vpp) && Number.isFinite(vals.Vout_NonInv_Vpp)
+        ? vals.Vout_NonInv_Vpp / vals.Vin_Vpp : NaN;
+
+      data.push({
+        ...vals,
+        Inv_Av: invAv,
+        Inv_Gain_dB: Number.isFinite(invAv) && invAv > 0 ? 20*Math.log10(invAv) : NaN,
+        NonInv_Av: nonAv,
+        NonInv_Gain_dB: Number.isFinite(nonAv) && nonAv > 0 ? 20*Math.log10(nonAv) : NaN
+      });
+    });
+
+    if (data.length < 2) throw new Error(`Only ${data.length} valid frequency rows were found. At least 2 are required to make a plot.`);
+    data.sort((a,b) => a.Frequency_Hz - b.Frequency_Hz);
+
+    const countFinite = key => data.reduce((n,d)=>n+(Number.isFinite(d[key])?1:0),0);
+    const capabilities = {
+      invMag: countFinite('Inv_Gain_dB') >= 2,
+      nonMag: countFinite('NonInv_Gain_dB') >= 2,
+      invPhase: countFinite('Phase_Inv_deg') >= 2,
+      nonPhase: countFinite('Phase_NonInv_deg') >= 2
+    };
+    if (!Object.values(capabilities).some(Boolean)) {
+      throw new Error('No plottable measurement series were found. Check the CSV column names and make sure at least two numeric values are present for one response.');
+    }
+    return {data, issues, missing, capabilities};
+  }
+
+  function median(values) {
+    const a = [...values].sort((x,y)=>x-y);
+    const n = a.length;
+    return n%2 ? a[(n-1)/2] : (a[n/2-1]+a[n/2])/2;
+  }
+
+  function crossingLogF(data, key, target) {
+    for (let i=1; i<data.length; i++) {
+      const y1=data[i-1][key], y2=data[i][key];
+      if (!Number.isFinite(y1) || !Number.isFinite(y2)) continue;
+      if ((y1-target)*(y2-target) <= 0 && y1 !== y2) {
+        const x1=Math.log10(data[i-1].Frequency_Hz), x2=Math.log10(data[i].Frequency_Hz);
+        const t=(target-y1)/(y2-y1);
+        return Math.pow(10, x1+t*(x2-x1));
+      }
+    }
+    return null;
+  }
+
+  function analyze(data) {
+    function one(key) {
+      const valid = data.filter(d=>Number.isFinite(d[key]));
+      if (!valid.length) return {g0:null, level3:null, f3:null, fu:null};
+      const g0 = median(valid.slice(0,Math.min(3,valid.length)).map(d=>d[key]));
+      const level3 = g0 - 3;
+      return {
+        g0,
+        level3,
+        f3: crossingLogF(data,key,level3),
+        fu: crossingLogF(data,key,0)
+      };
+    }
+    const inv=one('Inv_Gain_dB'), non=one('NonInv_Gain_dB');
+    return {
+      invG0:inv.g0, inv3Level:inv.level3, invF3:inv.f3, invFu:inv.fu,
+      nonG0:non.g0, non3Level:non.level3, nonF3:non.f3, nonFu:non.fu
+    };
+  }
+
+  function fmtHz(f) {
+    if (f == null || !Number.isFinite(f)) return 'Not reached';
+    if (f >= 1e6) return `${(f/1e6).toFixed(f>=10e6?2:3)} MHz`;
+    if (f >= 1e3) return `${(f/1e3).toFixed(f>=100e3?1:2)} kHz`;
+    return `${f.toFixed(1)} Hz`;
+  }
+  function fmtDb(x) { return Number.isFinite(x) ? `${x.toFixed(2)} dB` : '—'; }
+  function fmtNum(x,n=3) { return Number.isFinite(x) ? x.toFixed(n) : '—'; }
+
+  function updateResults(a) {
+    $('invG0').textContent=fmtDb(a.invG0); $('inv3Level').textContent=fmtDb(a.inv3Level); $('invF3').textContent=fmtHz(a.invF3); $('invFu').textContent=fmtHz(a.invFu);
+    $('nonG0').textContent=fmtDb(a.nonG0); $('non3Level').textContent=fmtDb(a.non3Level); $('nonF3').textContent=fmtHz(a.nonF3); $('nonFu').textContent=fmtHz(a.nonFu);
+  }
+
+  function svgEl(name, attrs={}, text='') {
+    const e=document.createElementNS('http://www.w3.org/2000/svg',name);
+    Object.entries(attrs).forEach(([k,v])=>e.setAttribute(k,v));
+    if (text !== '') e.textContent=text;
+    return e;
+  }
+
+  function niceStep(range, targetTicks=8) {
+    const rough=range/targetTicks;
+    const p=Math.pow(10,Math.floor(Math.log10(Math.max(rough,1e-12))));
+    const n=rough/p;
+    const m=n<=1?1:n<=2?2:n<=5?5:10;
+    return m*p;
+  }
+
+  function drawPlot(svg, data, cfg) {
+    while(svg.firstChild) svg.removeChild(svg.firstChild);
+    const W=1000,H=600, L=105,R=45,T=55,B=112;
+    const pw=W-L-R, ph=H-T-B;
+    const freqs=data.map(d=>d.Frequency_Hz);
+    const xmin=Math.log10(Math.min(...freqs)), xmax=Math.log10(Math.max(...freqs));
+    const allY=cfg.series.flatMap(s=>data.map(d=>d[s.key])).filter(Number.isFinite);
+    let ymin=cfg.fixedY?.[0] ?? Math.min(...allY), ymax=cfg.fixedY?.[1] ?? Math.max(...allY);
+    if (cfg.extraY) { ymin=Math.min(ymin,...cfg.extraY); ymax=Math.max(ymax,...cfg.extraY); }
+    if (ymin===ymax) { ymin-=1; ymax+=1; }
+    const pad=(ymax-ymin)*0.08;
+    ymin-=pad; ymax+=pad;
+    const ystep=cfg.yStep || niceStep(ymax-ymin,8);
+    ymin=Math.floor(ymin/ystep)*ystep; ymax=Math.ceil(ymax/ystep)*ystep;
+
+    const X=f=>L+(Math.log10(f)-xmin)/(xmax-xmin)*pw;
+    const Y=y=>T+(ymax-y)/(ymax-ymin)*ph;
+
+    svg.appendChild(svgEl('rect',{x:0,y:0,width:W,height:H,fill:'#fff'}));
+    svg.appendChild(svgEl('text',{x:W/2,y:28,'text-anchor':'middle','font-size':24,'font-weight':'700',fill:'#111'},cfg.title));
+
+    // Y grid/ticks
+    for(let y=Math.ceil(ymin/ystep)*ystep; y<=ymax+1e-9; y+=ystep){
+      const yy=Y(y);
+      svg.appendChild(svgEl('line',{x1:L,y1:yy,x2:W-R,y2:yy,stroke:'#e4e4e4','stroke-width':1}));
+      svg.appendChild(svgEl('text',{x:L-12,y:yy+5,'text-anchor':'end','font-size':16,fill:'#333'},`${Math.abs(y)<1e-9?0:Number(y.toFixed(6))}`));
+    }
+
+    // X log grid at 1,2,5 per decade
+    const d0=Math.floor(xmin), d1=Math.ceil(xmax);
+    for(let d=d0; d<=d1; d++){
+      for(const m of [1,2,5]){
+        const f=m*Math.pow(10,d);
+        if(f<Math.pow(10,xmin)*.999 || f>Math.pow(10,xmax)*1.001) continue;
+        const xx=X(f), major=m===1;
+        svg.appendChild(svgEl('line',{x1:xx,y1:T,x2:xx,y2:H-B,stroke:major?'#cfcfcf':'#eeeeee','stroke-width':major?1.2:1}));
+        if(major){
+          const exp=Math.round(Math.log10(f));
+          const label=exp===0?'1':`10${toSup(exp)}`;
+          svg.appendChild(svgEl('text',{x:xx,y:H-B+28,'text-anchor':'middle','font-size':16,fill:'#333'},label));
+        }
+      }
+    }
+
+    // Axes
+    svg.appendChild(svgEl('line',{x1:L,y1:T,x2:L,y2:H-B,stroke:'#111','stroke-width':2}));
+    svg.appendChild(svgEl('line',{x1:L,y1:H-B,x2:W-R,y2:H-B,stroke:'#111','stroke-width':2}));
+    svg.appendChild(svgEl('text',{x:L+pw/2,y:H-49,'text-anchor':'middle','font-size':19,'font-style':'italic',fill:'#111'},'Frequency, f (Hz)'));
+    if (cfg.footer) svg.appendChild(svgEl('text',{x:L+pw/2,y:H-17,'text-anchor':'middle','font-size':13.5,fill:'#444'},cfg.footer));
+    const yl=svgEl('text',{x:28,y:T+ph/2,'text-anchor':'middle','font-size':19,fill:'#111',transform:`rotate(-90 28 ${T+ph/2})`},cfg.ylabel);
+    svg.appendChild(yl);
+
+    // reference lines
+    (cfg.references||[]).forEach(ref=>{
+      if(ref.y<ymin || ref.y>ymax) return;
+      const yy=Y(ref.y);
+      svg.appendChild(svgEl('line',{x1:L,y1:yy,x2:W-R,y2:yy,stroke:ref.color||'#777','stroke-width':1.6,'stroke-dasharray':'8 7',opacity:.9}));
+      svg.appendChild(svgEl('text',{x:W-R-4,y:yy-7,'text-anchor':'end','font-size':14,fill:ref.color||'#555'},ref.label));
+    });
+
+    const colors=['#fe5c00','#111111','#555'];
+    cfg.series.forEach((s,si)=>{
+      const pts=data.filter(d=>Number.isFinite(d[s.key])).map(d=>`${X(d.Frequency_Hz)},${Y(d[s.key])}`).join(' ');
+      svg.appendChild(svgEl('polyline',{points:pts,fill:'none',stroke:s.color||colors[si%colors.length],'stroke-width':3,'stroke-linejoin':'round','stroke-linecap':'round'}));
+      data.forEach(d=>{
+        if(!Number.isFinite(d[s.key]))return;
+        svg.appendChild(svgEl('circle',{cx:X(d.Frequency_Hz),cy:Y(d[s.key]),r:3.2,fill:'#fff',stroke:s.color||colors[si%colors.length],'stroke-width':1.8}));
+      });
+    });
+
+    // vertical markers
+    (cfg.markers||[]).forEach((m,mi)=>{
+      if(!m.f || m.f<Math.pow(10,xmin) || m.f>Math.pow(10,xmax)) return;
+      const xx=X(m.f), yoff=(mi%2)*18;
+      svg.appendChild(svgEl('line',{x1:xx,y1:T,x2:xx,y2:H-B,stroke:m.color||'#777','stroke-width':1.5,'stroke-dasharray':m.dash||'5 6',opacity:.8}));
+      if (m.showLabel) svg.appendChild(svgEl('text',{x:xx+5,y:T+18+yoff,'font-size':13,fill:m.color||'#555'},m.label));
+    });
+
+    // legend
+    let lx=L+12, ly=T+22;
+    cfg.series.forEach((s,si)=>{
+      const c=s.color||colors[si%colors.length];
+      svg.appendChild(svgEl('line',{x1:lx,y1:ly,x2:lx+32,y2:ly,stroke:c,'stroke-width':4}));
+      svg.appendChild(svgEl('text',{x:lx+40,y:ly+5,'font-size':15,fill:'#111'},s.label));
+      ly+=24;
+    });
+  }
+
+  function toSup(n) {
+    const map={'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};
+    return String(n).split('').map(c=>map[c]||c).join('');
+  }
+
+  function renderTable(data) {
+    const body=$('dataBody'); body.innerHTML='';
+    data.forEach(d=>{
+      const tr=document.createElement('tr');
+      const phase=v=>Number.isFinite(v)?`${v.toFixed(2)}°`:'—';
+      const vals=[fmtHz(d.Frequency_Hz),fmtNum(d.Vin_Vpp,3),fmtNum(d.Vout_Inv_Vpp,3),fmtNum(d.Inv_Av,3),fmtNum(d.Inv_Gain_dB,2),phase(d.Phase_Inv_deg),fmtNum(d.Vout_NonInv_Vpp,3),fmtNum(d.NonInv_Av,3),fmtNum(d.NonInv_Gain_dB,2),phase(d.Phase_NonInv_deg)];
+      vals.forEach(v=>{ const td=document.createElement('td'); td.textContent=v; tr.appendChild(td); });
+      body.appendChild(tr);
+    });
+  }
+
+  function selectedValue(name) {
+    return document.querySelector(`input[name="${name}"]:checked`)?.value || '';
+  }
+
+  function getPlotConfig() {
+    return {
+      response: selectedValue('responseChoice') || 'both',
+      circuit: selectedValue('circuitChoice') || 'both',
+      layout: selectedValue('layoutChoice') || 'overlay'
+    };
+  }
+
+  function comboAvailable(response, circuit) {
+    if (!currentCapabilities) return false;
+    const responses = response==='both' ? ['mag','phase'] : [response];
+    const circuits = circuit==='both' ? ['inv','non'] : [circuit];
+    return responses.every(r => circuits.every(c => currentCapabilities[`${c}${r==='mag'?'Mag':'Phase'}`]));
+  }
+
+  function setRadioEnabled(name, value, enabled) {
+    const input=document.querySelector(`input[name="${name}"][value="${value}"]`);
+    if(!input) return;
+    input.disabled=!enabled;
+    input.closest('.radio-card')?.classList.toggle('disabled',!enabled);
+  }
+
+  function chooseBestValidPair() {
+    const curR=selectedValue('responseChoice') || 'both';
+    const curC=selectedValue('circuitChoice') || 'both';
+    if(comboAvailable(curR,curC)) return {response:curR,circuit:curC};
+    const pairs=[];
+    for(const response of ['both','mag','phase']) for(const circuit of ['both','inv','non']) {
+      if(comboAvailable(response,circuit)) {
+        const score=(response==='both'?2:1)*(circuit==='both'?2:1) + (circuit==='both'?0.15:0) + (response==='both'?0.1:0);
+        pairs.push({response,circuit,score});
+      }
+    }
+    pairs.sort((a,b)=>b.score-a.score);
+    const best=pairs[0];
+    if(best) {
+      document.querySelector(`input[name="responseChoice"][value="${best.response}"]`).checked=true;
+      document.querySelector(`input[name="circuitChoice"][value="${best.circuit}"]`).checked=true;
+    }
+    return best || {response:'',circuit:''};
+  }
+
+  function updateOptionAvailability() {
+    if(!currentCapabilities) return;
+    let pair=chooseBestValidPair();
+
+    // Disable response choices that cannot be produced for the selected circuit.
+    for(const r of ['mag','phase','both']) setRadioEnabled('responseChoice',r,comboAvailable(r,pair.circuit));
+    // Disable circuit choices that cannot produce the selected response.
+    for(const c of ['inv','non','both']) setRadioEnabled('circuitChoice',c,comboAvailable(pair.response,c));
+
+    // A change in one group can invalidate the other; repair once more, then refresh states.
+    pair=chooseBestValidPair();
+    for(const r of ['mag','phase','both']) setRadioEnabled('responseChoice',r,comboAvailable(r,pair.circuit));
+    for(const c of ['inv','non','both']) setRadioEnabled('circuitChoice',c,comboAvailable(pair.response,c));
+    updateLayoutControls();
+  }
+
+  function updateLayoutControls() {
+    const response=selectedValue('responseChoice') || 'both';
+    const circuit=selectedValue('circuitChoice') || 'both';
+    const overlay=$('layoutOverlay'), separate=$('layoutSeparate');
+    const overlayLabel=$('overlayLabel'), separateLabel=$('separateLabel'), hint=$('layoutHint');
+
+    if(circuit !== 'both') {
+      overlay.disabled=true; separate.disabled=true;
+      overlayLabel.classList.add('disabled'); separateLabel.classList.add('disabled');
+      overlay.checked=true;
+      hint.textContent = response==='both' ? 'One circuit selected: magnitude and phase will be shown as two separate graphs.' : 'One circuit selected: a single graph will be generated.';
+    } else {
+      overlay.disabled=false; separate.disabled=false;
+      overlayLabel.classList.remove('disabled'); separateLabel.classList.remove('disabled');
+      hint.textContent = (response==='both') ? 'Choose overlay for two comparison graphs, or separate panels for a 2×2 window.' : 'Choose overlay for one comparison graph, or separate panels for one graph per circuit.';
+    }
+  }
+
+  function circuitSeries(kind, circuit) {
+    const all = kind==='mag'
+      ? {inv:{key:'Inv_Gain_dB',label:'Inverting amplifier',color:'#fe5c00'}, non:{key:'NonInv_Gain_dB',label:'Non-inverting amplifier',color:'#111'}}
+      : {inv:{key:'Phase_Inv_deg',label:'Inverting amplifier',color:'#fe5c00'}, non:{key:'Phase_NonInv_deg',label:'Non-inverting amplifier',color:'#111'}};
+    return circuit==='both' ? [all.inv,all.non] : [all[circuit]];
+  }
+
+  function magConfig(analysis, circuit='both', title='Measured Closed-Loop Magnitude Response') {
+    const refs=[{y:0,label:'Unity gain (0 dB)',color:'#555'}];
+    const extra=[0];
+    const markers=[];
+    const footer=[];
+    if(circuit==='inv' || circuit==='both') {
+      if(Number.isFinite(analysis.inv3Level)) { refs.push({y:analysis.inv3Level,label:'Inv. −3 dB level',color:'#fe5c00'}); extra.push(analysis.inv3Level); }
+      markers.push({f:analysis.invF3,color:'#fe5c00'},{f:analysis.invFu,color:'#b34a0a',dash:'2 5'});
+      footer.push(`f₃dB,inv = ${fmtHz(analysis.invF3)}`,`funity,inv = ${fmtHz(analysis.invFu)}`);
+    }
+    if(circuit==='non' || circuit==='both') {
+      if(Number.isFinite(analysis.non3Level)) { refs.push({y:analysis.non3Level,label:'Non-inv. −3 dB level',color:'#111'}); extra.push(analysis.non3Level); }
+      markers.push({f:analysis.nonF3,color:'#111'},{f:analysis.nonFu,color:'#555',dash:'2 5'});
+      footer.push(`f₃dB,non-inv = ${fmtHz(analysis.nonF3)}`,`funity,non-inv = ${fmtHz(analysis.nonFu)}`);
+    }
+    return { title, ylabel:'Gain Magnitude (dB)', yStep:5, extraY:extra, series:circuitSeries('mag',circuit), references:refs, markers, footer:footer.join('   •   ') };
+  }
+
+  function phaseConfig(circuit='both', title='Measured Phase Response') {
+    return { title, ylabel:'Phase (degrees)', yStep:30, series:circuitSeries('phase',circuit) };
+  }
+
+  function hidePlotAreas() {
+    ['magSection','phaseSection','panelSection'].forEach(id=>$(id).classList.add('hidden'));
+    currentPanelSvgs=[];
+  }
+
+  function makePanel(title, kind, circuit, data, analysis) {
+    const wrap=document.createElement('div'); wrap.className='panel-plot';
+    const svg=svgEl('svg',{viewBox:'0 0 1000 600',role:'img','aria-label':title});
+    svg.classList.add('plot'); wrap.appendChild(svg); $('panelGrid').appendChild(wrap);
+    drawPlot(svg,data,kind==='mag' ? magConfig(analysis,circuit,title) : phaseConfig(circuit,title));
+    currentPanelSvgs.push({svg,title});
+  }
+
+  function renderSelectedPlots() {
+    if(!currentData.length || !currentAnalysis) return;
+    const cfg=getPlotConfig(); currentPlotConfig=cfg; hidePlotAreas(); updateResults(currentAnalysis); renderTable(currentData);
+    $('dataSection').classList.remove('hidden');
+
+    const wantsMag=cfg.response==='mag' || cfg.response==='both';
+    const wantsPhase=cfg.response==='phase' || cfg.response==='both';
+    const showInvMag=wantsMag && (cfg.circuit==='inv' || cfg.circuit==='both') && currentCapabilities?.invMag;
+    const showNonMag=wantsMag && (cfg.circuit==='non' || cfg.circuit==='both') && currentCapabilities?.nonMag;
+    $('resultsSection').classList.toggle('hidden',!(showInvMag || showNonMag));
+    $('invResultBox').classList.toggle('hidden',!showInvMag);
+    $('nonResultBox').classList.toggle('hidden',!showNonMag);
+
+    // Single-circuit selections always use one graph per requested response.
+    if(cfg.circuit!=='both' || cfg.layout==='overlay') {
+      if(wantsMag) { drawPlot($('magPlot'),currentData,magConfig(currentAnalysis,cfg.circuit)); $('magSection').classList.remove('hidden'); }
+      if(wantsPhase) { drawPlot($('phasePlot'),currentData,phaseConfig(cfg.circuit)); $('phaseSection').classList.remove('hidden'); }
+      return;
+    }
+
+    // Both circuits + separate layout: one panel per circuit/response.
+    $('panelGrid').innerHTML='';
+    if(wantsMag) {
+      makePanel('Inverting Amplifier — Magnitude','mag','inv',currentData,currentAnalysis);
+      makePanel('Non-Inverting Amplifier — Magnitude','mag','non',currentData,currentAnalysis);
+    }
+    if(wantsPhase) {
+      makePanel('Inverting Amplifier — Phase','phase','inv',currentData,currentAnalysis);
+      makePanel('Non-Inverting Amplifier — Phase','phase','non',currentData,currentAnalysis);
+    }
+    $('panelTitle').textContent = (wantsMag && wantsPhase) ? '2×2 response window' : 'Separate circuit plots';
+    $('panelSummary').textContent = (wantsMag && wantsPhase)
+      ? 'Four panels: inverting magnitude, non-inverting magnitude, inverting phase, and non-inverting phase.'
+      : 'The two circuits are shown in separate panels using the same response type.';
+    $('panelSection').classList.remove('hidden');
+  }
+
+
+  function processText(text, name='Uploaded CSV') {
+    clearMessages();
+    try {
+      const {data,issues,missing,capabilities}=validateAndProcess(text);
+      currentData=data; currentAnalysis=analyze(data); currentCapabilities=capabilities; currentMissingColumns=missing;
+      filename.textContent=name;
+      addMessage(`✓ ${data.length} valid frequency rows loaded and sorted.`,'ok');
+
+      const note=$('availabilityNote');
+      const unavailable=[];
+      if(!capabilities.invMag) unavailable.push('inverting magnitude');
+      if(!capabilities.nonMag) unavailable.push('non-inverting magnitude');
+      if(!capabilities.invPhase) unavailable.push('inverting phase');
+      if(!capabilities.nonPhase) unavailable.push('non-inverting phase');
+      if(missing.length || unavailable.length) {
+        const missingText=missing.length ? ` Missing expected column(s): <code>${missing.map(esc).join('</code>, <code>')}</code>.` : '';
+        note.innerHTML=`<b>CSV format warning:</b>${missingText} The tool will use the data it can recognize and has greyed out unavailable plotting options. Check the CSV template/header spelling if you expected those measurements to appear.`;
+        note.classList.remove('hidden');
+        addMessage('⚠ The CSV appears incomplete or may not match the expected format. Available series will still be plotted.','warn');
+      } else note.classList.add('hidden');
+
+      issues.slice(0,5).forEach(x=>addMessage(`⚠ ${esc(x)}`,'warn'));
+      if(issues.length>5) addMessage(`⚠ ${issues.length-5} additional cell issues were ignored.`,'warn');
+      if(capabilities.invMag && !currentAnalysis.invF3) addMessage('⚠ Inverting amplifier: the measured magnitude data do not cross the estimated −3 dB level. Add higher-frequency measurements.','warn');
+      if(capabilities.nonMag && !currentAnalysis.nonF3) addMessage('⚠ Non-inverting amplifier: the measured magnitude data do not cross the estimated −3 dB level. Add higher-frequency measurements.','warn');
+      if(capabilities.invMag && !currentAnalysis.invFu) addMessage('⚠ Inverting amplifier: the measured magnitude data do not reach 0 dB. Add higher-frequency measurements to estimate unity-gain frequency.','warn');
+      if(capabilities.nonMag && !currentAnalysis.nonFu) addMessage('⚠ Non-inverting amplifier: the measured magnitude data do not reach 0 dB. Add higher-frequency measurements to estimate unity-gain frequency.','warn');
+      updateResults(currentAnalysis);
+      renderTable(data);
+      $('plotOptionsSection').classList.remove('hidden');
+      ['resultsSection','magSection','phaseSection','panelSection','dataSection'].forEach(id=>$(id).classList.add('hidden'));
+      updateOptionAvailability();
+      addMessage('Choose from the available plotting options below, then click “Generate Selected Plots.”','ok');
+    } catch(err) {
+      currentData=[]; currentAnalysis=null; currentCapabilities=null; currentMissingColumns=[];
+      addMessage(`✗ ${esc(err.message)}`,'bad');
+      ['plotOptionsSection','resultsSection','magSection','phaseSection','panelSection','dataSection'].forEach(id=>$(id).classList.add('hidden'));
+    }
+  }
+
+  function downloadBlob(blob, filename) {
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=filename; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),1500);
+  }
+
+  function downloadText(text, filename, type='text/plain') { downloadBlob(new Blob([text],{type}),filename); }
+
+  function svgToPng(svg, filename) {
+    const clone=svg.cloneNode(true);
+    clone.setAttribute('width','2000'); clone.setAttribute('height','1200');
+    const xml=new XMLSerializer().serializeToString(clone);
+    const blob=new Blob([xml],{type:'image/svg+xml;charset=utf-8'});
+    const url=URL.createObjectURL(blob), img=new Image();
+    img.onload=()=>{
+      const canvas=document.createElement('canvas'); canvas.width=2000; canvas.height=1200;
+      const ctx=canvas.getContext('2d'); ctx.fillStyle='white'; ctx.fillRect(0,0,canvas.width,canvas.height); ctx.drawImage(img,0,0,canvas.width,canvas.height);
+      URL.revokeObjectURL(url);
+      canvas.toBlob(png=>downloadBlob(png,filename),'image/png');
+    };
+    img.src=url;
+  }
+
+  async function svgsToGridPng(items, filename) {
+    if(!items.length) return;
+    const cols = items.length===1 ? 1 : 2;
+    const rows = Math.ceil(items.length/cols);
+    const cellW=1600, cellH=960, gap=28;
+    const canvas=document.createElement('canvas');
+    canvas.width=cols*cellW+(cols-1)*gap; canvas.height=rows*cellH+(rows-1)*gap;
+    const ctx=canvas.getContext('2d'); ctx.fillStyle='white'; ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    const loadSvg = svg => new Promise((resolve,reject)=>{
+      const clone=svg.cloneNode(true); clone.setAttribute('width','1600'); clone.setAttribute('height','960');
+      const xml=new XMLSerializer().serializeToString(clone);
+      const url=URL.createObjectURL(new Blob([xml],{type:'image/svg+xml;charset=utf-8'}));
+      const img=new Image();
+      img.onload=()=>{URL.revokeObjectURL(url); resolve(img);};
+      img.onerror=e=>{URL.revokeObjectURL(url); reject(e);}; img.src=url;
+    });
+
+    for(let i=0;i<items.length;i++) {
+      const img=await loadSvg(items[i].svg); const col=i%cols, row=Math.floor(i/cols);
+      ctx.drawImage(img,col*(cellW+gap),row*(cellH+gap),cellW,cellH);
+    }
+    canvas.toBlob(png=>downloadBlob(png,filename),'image/png');
+  }
+
+  function processedCSV(data) {
+    const h=['Frequency_Hz','Vin_Vpp','Vout_Inv_Vpp','Phase_Inv_deg','Inv_Av','Inv_Gain_dB','Vout_NonInv_Vpp','Phase_NonInv_deg','NonInv_Av','NonInv_Gain_dB'];
+    const cell=v=>Number.isFinite(v)?v:'';
+    const lines=[h.join(',')];
+    data.forEach(d=>lines.push([d.Frequency_Hz,d.Vin_Vpp,d.Vout_Inv_Vpp,d.Phase_Inv_deg,d.Inv_Av,d.Inv_Gain_dB,d.Vout_NonInv_Vpp,d.Phase_NonInv_deg,d.NonInv_Av,d.NonInv_Gain_dB].map(cell).join(',')));
+    return lines.join('\n');
+  }
+
+  fileInput.addEventListener('change', e=>{
+    const f=e.target.files?.[0]; if(!f)return;
+    const reader=new FileReader(); reader.onload=()=>processText(reader.result,f.name); reader.readAsText(f);
+  });
+  ['dragenter','dragover'].forEach(ev=>dropzone.addEventListener(ev,e=>{e.preventDefault(); dropzone.classList.add('drag');}));
+  ['dragleave','drop'].forEach(ev=>dropzone.addEventListener(ev,e=>{e.preventDefault(); dropzone.classList.remove('drag');}));
+  dropzone.addEventListener('drop',e=>{
+    const f=e.dataTransfer.files?.[0]; if(!f)return;
+    const reader=new FileReader(); reader.onload=()=>processText(reader.result,f.name); reader.readAsText(f);
+  });
+
+  $('demoBtn').addEventListener('click',()=>processText(DEMO_CSV,'Built-in demo data'));
+  $('templateBtn').addEventListener('click',()=>downloadText(REQUIRED.join(',')+'\n','ecen2714_lab5_frequency_response_template.csv','text/csv'));
+  $('resetBtn').addEventListener('click',()=>{
+    currentData=[]; currentAnalysis=null; currentCapabilities=null; currentMissingColumns=[]; currentPanelSvgs=[]; fileInput.value=''; filename.textContent=''; clearMessages(); $('availabilityNote').classList.add('hidden');
+    ['plotOptionsSection','resultsSection','magSection','phaseSection','panelSection','dataSection'].forEach(id=>$(id).classList.add('hidden'));
+  });
+  document.querySelectorAll('input[name="responseChoice"],input[name="circuitChoice"]').forEach(el=>el.addEventListener('change',updateOptionAvailability));
+  $('generatePlotsBtn').addEventListener('click',renderSelectedPlots);
+  $('magPngBtn').addEventListener('click',()=>svgToPng($('magPlot'),'ECEN2714_Lab5_Magnitude_Response.png'));
+  $('phasePngBtn').addEventListener('click',()=>svgToPng($('phasePlot'),'ECEN2714_Lab5_Phase_Response.png'));
+  $('panelPngBtn').addEventListener('click',()=>svgsToGridPng(currentPanelSvgs,'ECEN2714_Lab5_Multi_Panel_Response.png'));
+  $('processedBtn').addEventListener('click',()=>currentData.length && downloadText(processedCSV(currentData),'ECEN2714_Lab5_Processed_Data.csv','text/csv'));
+  $('panelProcessedBtn').addEventListener('click',()=>currentData.length && downloadText(processedCSV(currentData),'ECEN2714_Lab5_Processed_Data.csv','text/csv'));
+
+  // Expose a tiny test API for automated validation only.
+  window.ECEN2714Plotter = { validateAndProcess, analyze, processText, renderSelectedPlots, getPlotConfig, comboAvailable, demoCSV: DEMO_CSV };
+})();
+</script>
+</body>
+</html>
