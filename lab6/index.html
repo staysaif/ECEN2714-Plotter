@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="ECEN 2714 Lab 6 RC/RL passive filter Bode plotting tool">
+<title>ECEN 2714 | Lab 6 Filter Response Plotter</title>
+<style>
+:root{--orange:#fe5c00;--black:#181818;--ink:#202125;--muted:#62676c;--border:#dedfe2;--bg:#f4f4f4;--white:#fff;--good:#196c3f;--bad:#9c2828;--warn:#875500}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;color:var(--ink);background:var(--bg);font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.5}header{background:var(--black);border-top:8px solid var(--orange);padding:24px 20px 26px;color:white}header .inner,main{max-width:1220px;margin:0 auto}header h1{margin:0 0 3px;font-size:clamp(1.6rem,3vw,2.35rem);letter-spacing:-.025em}header p{margin:0;color:#d4d4d4}main{padding:24px 18px 38px}.card{border-radius:12px;border:1px solid var(--border);background:white;padding:21px;margin-bottom:18px;box-shadow:0 2px 9px #00000007}h2{margin:0 0 8px;font-size:1.32rem}h3{margin:0 0 6px;font-size:1.07rem}p{margin:7px 0 11px}.small{color:var(--muted);font-size:.92rem}.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:15px}.step{background:#fafafa;border-left:4px solid var(--orange);padding:13px}.step b{display:block;margin-bottom:3px}.toolbar{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-top:13px}button,.file-label{display:inline-flex;text-decoration:none;justify-content:center;align-items:center;border:none;border-radius:7px;background:var(--orange);color:#fff;padding:10px 14px;font-weight:bold;font-size:.93rem;cursor:pointer;min-height:41px}button.secondary,.file-label.secondary{background:#303030;color:white}button.light{background:#efeff0;color:#242424;border:1px solid #ccc}button:hover,.file-label:hover{filter:brightness(.95)}button:disabled{opacity:.45;cursor:not-allowed}.file-label input{display:none}.drop{border:2px dashed #acb0b2;border-radius:10px;text-align:center;padding:23px 15px;background:#fcfcfc;margin-top:14px;transition:background .15s,border-color .15s}.drop.drag{background:#fff0e7;border-color:var(--orange)}.drop strong{display:block}.filename{font-weight:bold;margin-top:6px;overflow-wrap:anywhere}.messages{display:grid;gap:8px;margin-top:13px}.msg{padding:10px 12px;border-left:4px solid;border-radius:6px;background:#f9f9f9}.msg.good{background:#f0f8f3;border-color:var(--good)}.msg.bad{background:#fff0f0;border-color:var(--bad);color:#791b1b}.msg.warn{background:#fff7e8;border-color:#cf8500;color:#6c4400}.msg .details{font-size:.91rem;margin-top:2px}.msg strong{display:block}.hidden{display:none!important}.controls{display:grid;grid-template-columns:minmax(220px,1fr) minmax(260px,1.6fr);gap:15px;margin:14px 0}.option-group{border:1px solid var(--border);border-radius:10px;padding:14px;background:#fcfcfc}.radios{display:grid;gap:9px}.option{display:flex;align-items:flex-start;gap:9px;border:1px solid #dedede;border-radius:8px;background:white;padding:9px 11px;cursor:pointer}.option input{accent-color:var(--orange);margin-top:4px}.option small{display:block;font-size:.85rem;color:var(--muted)}.checks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.option.disabled{opacity:.47;cursor:not-allowed;background:#f3f3f3}.status{font-size:.79rem;display:inline-block;border:1px solid #dadada;padding:1px 7px;border-radius:50px;margin-left:5px;color:#555}.key{background:#fff3eb;color:#a13c00;border-radius:4px;padding:1px 5px;font-family:Consolas,monospace;font-size:.91em;overflow-wrap:anywhere}.availability{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px}.availability .mini{border:1px solid var(--border);padding:12px;border-radius:9px}.mini b{display:block;margin-bottom:7px}.mini .line{display:flex;gap:8px;justify-content:space-between;align-items:center;font-size:.89rem;padding:2px 0}.pill{border-radius:20px;padding:2px 8px;background:#ededed;font-size:.78rem;white-space:nowrap}.pill.ready{background:#edf7f0;color:#21683a}.pill.incomplete{background:#fff0ee;color:#9b2828}.pill.absent{background:#f0f0f0;color:#686868}.plot-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:14px}.plot-panel{min-width:0;border:1px solid #e0e0e0;background:#fff;border-radius:10px;padding:10px}.plot-panel h3{font-size:1.02rem;margin:0 0 7px}.plot-frame{width:100%;background:white}.plot-frame svg{display:block;width:100%;height:auto}.plot-panel .actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;align-items:center;margin-top:9px;border-top:1px solid #eee;padding-top:10px}.plot-panel .actions button{font-size:.84rem;padding:8px 11px;min-height:34px}.plot-panel .summary{font-size:.85rem;color:#545454}.result-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px}.result-tile{border:1px solid var(--border);border-radius:8px;padding:10px 12px}.result-tile b{display:block;margin-bottom:5px}.result-tile .metric{font-size:.89rem;border-top:1px solid #eee;padding:4px 0;display:flex;justify-content:space-between;gap:9px}.result-tile .metric span:last-child{font-weight:bold;text-align:right}.table-scroll{max-height:360px;overflow:auto;border:1px solid var(--border);border-radius:8px;margin-top:11px}table{border-collapse:collapse;min-width:900px;width:100%;font-size:.84rem}th,td{padding:8px 9px;border-bottom:1px solid #e8e8e8;text-align:right;white-space:nowrap}th{background:#fafafa;position:sticky;top:0;z-index:1}th:first-child,td:first-child{text-align:left;position:sticky;left:0;background:white;border-right:1px solid #e5e5e5}th:first-child{background:#fafafa;z-index:2}.info{background:#fafafa;border-left:4px solid var(--orange);padding:10px 13px;font-size:.92rem;margin-top:12px}footer{text-align:center;color:#777;font-size:.86rem;margin:22px 0 0}code{font-family:Consolas,monospace}@media(max-width:950px){.availability,.result-grid{grid-template-columns:repeat(2,1fr)}.plot-grid{grid-template-columns:1fr}}@media(max-width:690px){.steps,.controls,.checks{grid-template-columns:1fr}.card{padding:15px}.availability,.result-grid{grid-template-columns:1fr}.toolbar button,.toolbar .file-label{width:100%}main{padding:14px 10px}.plot-panel{padding:7px}}
+@media print{body{background:#fff}header{background:white;color:black;border-top:3px solid #000}header p{color:#555}.card{box-shadow:none;break-inside:avoid}.controls,.toolbar,.drop,.steps{display:none}.plot-grid{grid-template-columns:1fr}.plot-panel{break-inside:avoid}.plot-panel .actions{display:none}}
+</style>
+</head>
+<body>
+<header><div class="inner"><h1>ECEN 2714 Frequency Response Plotter</h1><p>Lab 6 · RC Low-Pass and RL High-Pass Filters</p></div></header>
+<main>
+<section class="card">
+<h2>How to use this tool</h2>
+<div class="steps"><div class="step"><b>1. Download the template</b>Use the CSV with the 15 required lab frequencies. Enter only the columns you have measured.</div><div class="step"><b>2. Upload your CSV</b>Include input/output peak-to-peak voltages for gain, and/or phase in degrees. Complete every row of a response you want to plot.</div><div class="step"><b>3. Select and export</b>Choose magnitude, phase, or both; select one or more circuits. Each selected circuit gets its own graph(s), never overlaid.</div></div>
+<div class="info">Each circuit and response is independent. An entirely blank column is optional; a partially filled response is incomplete. Each table must retain its <strong>15 listed frequency rows</strong>. Extra frequencies may be added to any table independently. Entirely blank measurement columns are optional; partially filled required measurements are reported as incomplete.</div>
+</section>
+<section class="card">
+<h2>CSV template and measurements</h2>
+<p class="small">Magnitude is calculated using <strong>20 log₁₀(Vout,pp / Vin,pp)</strong>. Enter phase as <strong>∠Vout − ∠Vin</strong>, in degrees. The CSV contains <strong>two separate tables</strong>: RC LPF and RL HPF. Each has its own frequency column, so additional frequencies can be entered independently. Leave a circuit’s measurement columns blank until you measure it.</p>
+<div class="toolbar"><a id="templateBtn" class="file-label" href="./ECEN2714_Lab6_CSV_Template.csv" download="ECEN2714_Lab6_CSV_Template.csv">1. Download CSV Template</a><label class="file-label secondary" for="csvFile">2. Choose CSV File<input type="file" id="csvFile" accept=".csv,text/csv"></label><button class="light" id="demoBtn">Load Synthetic Example (10–12 GHz)</button><button class="light" id="resetBtn">Reset</button></div>
+<p class="small">If your browser does not start the download, <a href="./ECEN2714_Lab6_CSV_Template.csv">open the CSV template directly</a> and save the file. The downloaded file has two tables, one for RC LPF and one for RL HPF.</p>
+<p class="small"><strong>Example notice:</strong> The built-in example uses intentionally unrealistic 10–12 GHz cutoff frequencies; it demonstrates the tool only and is not acceptable as measured lab data.</p>
+<div id="drop" class="drop" tabindex="0" role="region" aria-label="CSV file drop area"><strong>Drag and drop a CSV file here</strong><span class="small">or select “Choose CSV File”</span><div class="filename" id="filename"></div></div>
+<div class="messages" id="messages" role="status" aria-live="polite"></div>
+</section>
+<section id="optionsSection" class="card hidden"><h2>Choose what to plot</h2><p class="small">Only complete measurement series can be plotted. Multiple circuits appear in <strong>separate graphs</strong>; there is no overlay option.</p>
+<div id="availability" class="availability"></div>
+<div class="controls">
+<fieldset class="option-group" style="min-width:0"><legend><strong>Response type</strong></legend><div class="radios"><label class="option"><input type="radio" name="response" value="both" checked><span><b>Magnitude and phase</b><small>Up to two graphs per selected circuit</small></span></label><label class="option"><input type="radio" name="response" value="mag"><span><b>Magnitude only</b><small>Gain (dB) versus log frequency</small></span></label><label class="option"><input type="radio" name="response" value="phase"><span><b>Phase only</b><small>Phase (°) versus log frequency</small></span></label></div></fieldset>
+<fieldset class="option-group" style="min-width:0"><legend><strong>Circuits</strong></legend><div id="circuitChecks" class="checks"></div><div class="small" style="margin-top:12px">Select any number of circuits. Responses without complete data are skipped.</div></fieldset>
+</div><div class="toolbar"><button id="plotBtn">Generate Selected Plots</button><button id="allPngBtn" class="secondary">Download All Displayed Plots (PNG)</button><button id="processedBtn" class="light">Download Processed CSV</button></div><div class="messages" id="plotMessages" role="status"></div></section>
+<section id="resultsSection" class="card hidden"><h2>Cutoff frequency estimates</h2><p class="small">The tool estimates the passband level from the median of the first three points (LPF) or last three points (HPF), then interpolates the −3.0103 dB crossing versus log-frequency. Estimates require a complete magnitude response.</p><div id="resultGrid" class="result-grid"></div></section>
+<section id="plotsSection" class="card hidden"><h2>Measured Bode plots</h2><p class="small" id="plotCount"></p><div id="plotGrid" class="plot-grid"></div></section>
+<section id="dataSection" class="card hidden"><h2>Processed measurements</h2><p class="small">Calculated gain appears only for complete magnitude series; partial responses are not used to make a curve.</p><div id="dataTables"></div></section>
+<footer>ECEN 2714 · Lab 6 · All calculations and file processing run in your browser. No data are uploaded to a server.</footer>
+</main>
+<script>
+(()=>{'use strict';
+const FREQS=[1000,10000,50000,100000,200000,350000,450000,530000,650000,720000,850000,1000000,1500000,2000000,3000000];
+const CIRCUITS=[{id:'RC_LPF',name:'RC Low-Pass Filter',short:'RC LPF',type:'LPF',fc:1/(2*Math.PI*22*10e-9)},{id:'RL_HPF',name:'RL High-Pass Filter',short:'RL HPF',type:'HPF',fc:500e3/(2*Math.PI*.150)}];
+const suffixes=['Vin_Vpp','Vout_Vpp','Phase_deg'];
+const BLOCK_HEADERS=['Frequency_Hz','Vin_Vpp','Vout_Vpp','Phase_deg'];
+const HEADERS=['Frequency_Hz',...CIRCUITS.flatMap(c=>suffixes.map(s=>`${c.id}_${s}`))]; // legacy wide format
+const $=id=>document.getElementById(id);
+const state={rows:{},series:{},issues:[],seen:false,plots:[],file:''};
+function fmtHz(f){if(!Number.isFinite(f))return 'Not reached';if(f>=1e9)return `${+(f/1e9).toFixed(4)} GHz`;if(f>=1e6)return `${+(f/1e6).toFixed(4)} MHz`;if(f>=1e3)return `${+(f/1e3).toFixed(3)} kHz`;return `${+f.toFixed(2)} Hz`}
+function fmtVal(x,n=3){return Number.isFinite(x)?Number(x.toFixed(n)).toString():'—'}
+function csvEscape(v){let s=String(v??'');return /[",\n\r]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s}
+function templateText(){
+ let blocks=[];
+ for(const c of CIRCUITS){
+   blocks.push(c.id);
+   blocks.push(BLOCK_HEADERS.join(','));
+   blocks.push(...FREQS.map(f=>[f,'','',''].join(',')));
+   blocks.push('');
+ }
+ return blocks.join('\r\n')+'\r\n';
+}
+
+const DEMO_EXTRA_FREQS=[10000000,100000000,500000000,1000000000,2000000000,4000000000,6000000000,8000000000,10000000000,12000000000,15000000000,20000000000,30000000000,50000000000,100000000000];
+const DEMO_CUTOFFS={RC_LPF:1e10,RL_HPF:1.2e10};
+function demoText(){
+ const freqs=[...new Set([...FREQS,...DEMO_EXTRA_FREQS])].sort((a,b)=>a-b);
+ const blocks=[];
+ for(let j=0;j<CIRCUITS.length;j++){
+   const c=CIRCUITS[j],fc=DEMO_CUTOFFS[c.id];
+   blocks.push(c.id,BLOCK_HEADERS.join(','));
+   for(let i=0;i<freqs.length;i++){
+     const f=freqs[i],x=f/fc,vin=5*(1+0.018*Math.sin(.7*i+j));
+     const mag=c.type==='LPF'?1/Math.sqrt(1+x*x):x/Math.sqrt(1+x*x);
+     const out=vin*mag*(1+0.008*Math.sin(i*1.9+j));
+     const phase=(c.type==='LPF'?-Math.atan(x):Math.atan(1/x))*180/Math.PI+0.6*Math.sin(i*.8+j);
+     // toPrecision retains small HPF outputs instead of rounding them to zero.
+     blocks.push([f,vin.toFixed(4),out.toPrecision(10),phase.toFixed(3)].join(','));
+   }
+   blocks.push('');
+ }
+ return blocks.join('\r\n')+'\r\n';
+}
+
+function download(blob,name){let u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1500)}
+function downloadText(content,name){download(new Blob([content],{type:'text/csv;charset=utf-8'}),name)}
+function addMsg(el,type,title,detail=''){let node=document.createElement('div');node.className='msg '+type;let strong=document.createElement('strong');strong.textContent=title;node.append(strong);if(detail){let d=document.createElement('div');d.className='details';d.textContent=detail;node.append(d)}el.append(node)}
+function clear(){['messages','plotMessages','plotGrid','resultGrid','dataTables','availability','circuitChecks'].forEach(id=>$(id).replaceChildren());['optionsSection','resultsSection','plotsSection','dataSection'].forEach(id=>$(id).classList.add('hidden'));$('filename').textContent='';state.rows={};state.series={};state.issues=[];state.seen=false;state.plots=[];state.file='';$('csvFile').value=''}
+// A compact CSV reader supporting quoted cells and CRLF. Blank separator lines are ignored.
+function parseCSV(text){let rows=[],row=[],field='',quoted=false;for(let i=0;i<text.length;i++){let ch=text[i];if(ch==='"'){if(quoted&&text[i+1]==='"'){field+='"';i++}else quoted=!quoted}else if(ch===','&&!quoted){row.push(field.trim());field=''}else if((ch==='\r'||ch==='\n')&&!quoted){if(ch==='\r'&&text[i+1]==='\n')i++;row.push(field.trim());if(row.some(x=>x!==''))rows.push(row);row=[];field=''}else field+=ch}if(quoted)throw Error('CSV contains an unclosed quoted field.');row.push(field.trim());if(row.some(x=>x!==''))rows.push(row);return rows}
+function fullColumn(rows,idx,key,validator,label,issues){
+  if(idx[key]===undefined)return {kind:'absent',values:[]};
+  const arr=rows.map(r=>String(r.cells[idx[key]]??'').trim());
+  if(!arr.some(v=>v!==''))return {kind:'absent',values:[]};
+  const missing=[];
+  const values=arr.map((value,i)=>{
+    const required=FREQS.includes(rows[i].f);
+    if(!value){if(required)missing.push(fmtHz(rows[i].f)+' (blank)');return NaN}
+    const n=Number(value);
+    if(!Number.isFinite(n)||!validator(n)){
+      if(required)missing.push(fmtHz(rows[i].f)+' (invalid: '+value+')');
+      else issues.push({type:'warn',title:label+' has an invalid extra measurement',detail:fmtHz(rows[i].f)+' ('+value+'). This optional point is not plotted.'});
+      return NaN;
+    }
+    return n;
+  });
+  if(missing.length){
+    issues.push({type:'bad',title:label+' entries are incomplete',detail:missing.slice(0,7).join(', ')+(missing.length>7?` … and ${missing.length-7} more`:'')+'. All 15 required frequency rows must be filled for this measurement, or the column must be entirely blank.'});
+    return {kind:'incomplete',values:[]};
+  }
+  return {kind:'complete',values};
+}
+function analyzeCrossing(rows,db,type,targetFc){
+  let sorted=db.map((v,i)=>({f:rows[i].f,y:v})).filter(x=>Number.isFinite(x.y)).sort((a,b)=>a.f-b.f);
+  let edge=type==='LPF'?sorted.slice(0,3):sorted.slice(-3);
+  let sample=edge.map(x=>x.y).sort((a,b)=>a-b),pass=sample[Math.floor(sample.length/2)],level=pass-10*Math.log10(2);
+  let candidates=[];
+  for(let i=1;i<sorted.length;i++){
+    let a=sorted[i-1],b=sorted[i],dx=b.y-a.y;
+    if((a.y-level)*(b.y-level)>0)continue;
+    if(dx===0){if(a.y===level)candidates.push(a.f);continue}
+    if(type==='LPF'&&dx>0||type==='HPF'&&dx<0)continue;
+    let t=(level-a.y)/dx;
+    candidates.push(Math.pow(10,Math.log10(a.f)+t*(Math.log10(b.f)-Math.log10(a.f))));
+  }
+  let fc=candidates.length?candidates.sort((a,b)=>Math.abs(Math.log(a/targetFc))-Math.abs(Math.log(b/targetFc)))[0]:null;
+  return {pass,level,fc};
+}
+function readFileContent(text,name){
+ clear();state.file=name;$('filename').textContent=name;
+ const out=$('messages');
+ try{
+   const csv=parseCSV(text);
+   if(csv.length<2)throw Error('No measurement tables were found. Download the two-table CSV template.');
+   const issues=[];
+   const blocks={};
+   const first=String(csv[0][0]??'').replace(/^\uFEFF/,'').trim();
+   if(first==='Frequency_Hz'){
+     // Accept previously downloaded wide-format Lab 6 CSV files as well.
+     const h=csv[0].map(v=>v.trim()),wideIdx=Object.fromEntries(h.map((v,i)=>[v,i]));
+     if(new Set(h).size!==h.length)throw Error('The wide CSV contains duplicate header columns.');
+     for(const c of CIRCUITS){
+       const map={Frequency_Hz:0};
+       for(const suffix of ['Vin_Vpp','Vout_Vpp','Phase_deg','Gain_dB']){
+         const col=wideIdx[c.id+'_'+suffix];if(col!==undefined)map[suffix]=Object.keys(map).length;
+       }
+       let keys=Object.keys(map),wideCols=keys.map(k=>k==='Frequency_Hz'?'Frequency_Hz':c.id+'_'+k);
+       let rows=csv.slice(1).map((r,i)=>({cells:wideCols.map(w=>r[wideIdx[w]]??''),line:i+2}));
+       blocks[c.id]={idx:Object.fromEntries(keys.map((k,i)=>[k,i])),rows};
+     }
+     issues.push({type:'warn',title:'Older CSV layout detected',detail:'Older wide format is supported; only RC LPF and RL HPF are used. For new measurements use the two-table template.'});
+   }else{
+     // Sequential labeled circuit tables (standard CSV: one worksheet, two required blocks).
+     let active=null,seen=new Set();
+     for(let i=0;i<csv.length;i++){
+       const cells=csv[i],firstCell=String(cells[0]??'').replace(/^\uFEFF/,'').trim();
+       const circuit=CIRCUITS.find(c=>c.id===firstCell);
+       if(circuit && cells.slice(1).every(x=>x==='')){
+         if(seen.has(circuit.id)){
+           issues.push({type:'bad',title:'Duplicate table: '+circuit.short,detail:'Each circuit must have exactly one table.'});
+           active=null;
+         }else{
+           seen.add(circuit.id);active={id:circuit.id,rows:[],idx:null,headerLine:i+1};blocks[circuit.id]=active;
+         }
+         continue;
+       }
+       // Ignore legacy RC_HPF and RL_LPF blocks when processing old four-table CSVs.
+       if(['RC_HPF','RL_LPF'].includes(firstCell) && cells.slice(1).every(x=>x==='')){
+         active={skip:true};continue;
+       }
+       if(active?.skip)continue;
+       if(!active){
+         issues.push({type:'bad',title:'Unrecognized CSV row '+(i+1),detail:'Expected a circuit title such as RC_LPF or RL_HPF followed by the table header.'});
+         continue;
+       }
+       if(!active.idx){
+         const header=cells.map(x=>x.trim());
+         if(header[0]!=='Frequency_Hz'){
+           issues.push({type:'bad',title:active.id+' header is invalid',detail:'The next row after the circuit title must begin with Frequency_Hz.'});
+           active=null;continue;
+         }
+         if(new Set(header).size!==header.length){
+           issues.push({type:'bad',title:active.id+' header has duplicates',detail:'A column name appears more than once.'});
+           active=null;continue;
+         }
+         active.idx=Object.fromEntries(header.map((v,j)=>[v,j]));
+       }else active.rows.push({cells,line:i+1});
+     }
+   }
+   const series={},counts=[];
+   let recognized=0;
+   for(const c of CIRCUITS){
+     const b=blocks[c.id];
+     if(!b || !b.idx){
+       issues.push({type:'bad',title:c.short+' table is missing',detail:'This circuit cannot be plotted until its labeled table and column headers are restored.'});
+       series[c.id]=emptyCircuit();continue;
+     }
+     const used=new Map(),rows=[],fatal=[];
+     for(const rec of b.rows){
+       const raw=String(rec.cells[b.idx.Frequency_Hz]??'').trim(),f=Number(raw);
+       if(!raw||!Number.isFinite(f)||f<=0){fatal.push(`CSV row ${rec.line}: frequency must be a positive number.`);continue}
+       if(used.has(f)){fatal.push(`${fmtHz(f)} is duplicated in CSV rows ${used.get(f)} and ${rec.line}.`);continue}
+       used.set(f,rec.line);rows.push({f,cells:rec.cells});
+     }
+     const missing=FREQS.filter(f=>!used.has(f));
+     if(missing.length)fatal.push('Missing required frequency row(s): '+missing.map(fmtHz).join(', ')+'.');
+     if(fatal.length){
+       issues.push({type:'bad',title:c.short+' frequency rows are incomplete',detail:fatal.slice(0,7).join(' ')+(fatal.length>7?' Other errors were also found.':'')});
+       series[c.id]=emptyCircuit();continue;
+     }
+     rows.sort((a,b)=>a.f-b.f);
+     let input=fullColumn(rows,b.idx,'Vin_Vpp',v=>v>0,c.short+' Vin',issues);
+     let output=fullColumn(rows,b.idx,'Vout_Vpp',v=>v>0,c.short+' Vout',issues);
+     let providedDB=fullColumn(rows,b.idx,'Gain_dB',v=>true,c.short+' Gain_dB',issues);
+     let phase=fullColumn(rows,b.idx,'Phase_deg',v=>true,c.short+' phase',issues);
+     let mag={kind:'absent',values:[],source:''};
+     if(input.kind==='complete'&&output.kind==='complete'){
+       mag={kind:'complete',source:'measured Vpp',values:input.values.map((v,i)=>{
+         const other=output.values[i];
+         if(Number.isFinite(v)&&Number.isFinite(other))return 20*Math.log10(other/v);
+         if(Number.isFinite(v)!==Number.isFinite(other))issues.push({type:'warn',title:c.short+' extra magnitude point skipped',detail:fmtHz(rows[i].f)+' needs both Vin and Vout. This extra point was skipped.'});
+         return NaN;
+       })};
+     }else if(providedDB.kind==='complete'){
+       mag={kind:'complete',source:'provided Gain_dB',values:providedDB.values};
+     }else if(input.kind!=='absent'||output.kind!=='absent'||providedDB.kind==='incomplete'){
+       mag={kind:'incomplete',values:[],source:''};
+       if(input.kind!=='incomplete'&&output.kind!=='incomplete'&&providedDB.kind!=='incomplete')
+         issues.push({type:'bad',title:c.short+' magnitude entries are incomplete',detail:'Enter Vin_Vpp and Vout_Vpp for all 15 required frequencies, or supply a complete optional Gain_dB column.'});
+     }
+     const analysis=mag.kind==='complete'?analyzeCrossing(rows,mag.values,c.type,c.fc):null;
+     series[c.id]={rows,mag,phase,input,output,providedDB,analysis};
+     counts.push(`${c.short}: ${rows.length}`);
+     if(mag.kind==='complete')recognized++;
+     if(phase.kind==='complete')recognized++;
+   }
+   state.rows=Object.fromEntries(CIRCUITS.map(c=>[c.id,series[c.id].rows]));
+   state.series=series;state.issues=issues;state.seen=true;
+   addMsg(out,'good','Measurement tables loaded',`${counts.join(' • ')||'No valid tables'} frequency rows. ${recognized} complete response series available.`);
+   for(const issue of issues)addMsg(out,issue.type,issue.title,issue.detail);
+   if(!recognized){addMsg(out,'bad','No complete responses yet','Fill the required rows for at least one circuit’s phase or magnitude. Incomplete responses will not plot.');return}
+   buildOptions();$('optionsSection').classList.remove('hidden');buildTable();buildResultCards();renderPlots();
+ }catch(e){addMsg(out,'bad','CSV validation error',e.message)}
+}
+function emptyCircuit(){let missing=()=>({kind:'absent',values:[]});return {rows:[],mag:missing(),phase:missing(),input:missing(),output:missing(),providedDB:missing(),analysis:null}}
+
+function buildOptions(){let avail=$('availability'),checks=$('circuitChecks');for(let c of CIRCUITS){let s=state.series[c.id],tile=document.createElement('div');tile.className='mini';let b=document.createElement('b');b.textContent=c.short;tile.append(b);for(let kind of ['mag','phase']){let line=document.createElement('div');line.className='line';let name=document.createElement('span');name.textContent=kind==='mag'?'Magnitude':'Phase';let pill=document.createElement('span');pill.className='pill '+(s[kind].kind==='complete'?'ready':s[kind].kind);pill.textContent=s[kind].kind==='complete'?'Complete':s[kind].kind==='incomplete'?'Incomplete':'Not entered';line.append(name,pill);tile.append(line)}avail.append(tile);let enabled=s.mag.kind==='complete'||s.phase.kind==='complete',opt=document.createElement('label');opt.className='option'+(enabled?'':' disabled');let check=document.createElement('input');check.type='checkbox';check.className='circuitCheck';check.value=c.id;check.checked=enabled;check.disabled=!enabled;let descr=document.createElement('span');let txt=document.createElement('b');txt.textContent=c.short;let small=document.createElement('small');small.textContent=c.type==='LPF'?'Low-pass response':'High-pass response';descr.append(txt,small);opt.append(check,descr);checks.append(opt)}}
+function selection(){let r=document.querySelector('input[name="response"]:checked')?.value||'both';let kinds=r==='both'?['mag','phase']:[r],selected=[...document.querySelectorAll('.circuitCheck:checked')].map(x=>x.value);return{selected,kinds}}
+function buildResultCards(){let target=$('resultGrid');target.replaceChildren();let show=false;for(const c of CIRCUITS){let a=state.series[c.id].analysis;if(!a)continue;show=true;let card=document.createElement('div');card.className='result-tile';let name=document.createElement('b');name.textContent=c.short;card.append(name);for(let [label,value] of [['Theoretical fc',fmtHz(c.fc)],['Measured fc',a.fc?fmtHz(a.fc):'Not reached'],['Passband gain',fmtVal(a.pass,2)+' dB'],['−3.01 dB level',fmtVal(a.level,2)+' dB']]){let line=document.createElement('div');line.className='metric';let l=document.createElement('span');l.textContent=label;let v=document.createElement('span');v.textContent=value;line.append(l,v);card.append(line)}target.append(card)}$('resultsSection').classList.toggle('hidden',!show)}
+function buildTable(){
+ const area=$('dataTables');area.replaceChildren();
+ for(const c of CIRCUITS){
+   const s=state.series[c.id];
+   if(!s.rows.length)continue;
+   const heading=document.createElement('h3');heading.textContent=c.name;heading.style.marginTop='16px';
+   const scroll=document.createElement('div');scroll.className='table-scroll';
+   const table=document.createElement('table');table.style.minWidth='600px';
+   const thead=document.createElement('thead'),tr=document.createElement('tr');
+   for(const h of ['Frequency (Hz)','Vin (Vpp)','Vout (Vpp)','Gain (dB)','Phase (°)']){
+     const th=document.createElement('th');th.textContent=h;tr.append(th);
+   }
+   thead.append(tr);table.append(thead);
+   const body=document.createElement('tbody');
+   s.rows.forEach((row,i)=>{
+     const line=document.createElement('tr');
+     const values=[String(row.f),s.input.kind==='complete'?fmtVal(s.input.values[i],5):'—',s.output.kind==='complete'?fmtVal(s.output.values[i],5):'—',s.mag.kind==='complete'?fmtVal(s.mag.values[i],3):'—',s.phase.kind==='complete'?fmtVal(s.phase.values[i],2):'—'];
+     for(const v of values){const td=document.createElement('td');td.textContent=v;line.append(td)}
+     body.append(line);
+   });
+   table.append(body);scroll.append(table);area.append(heading,scroll);
+ }
+ $('dataSection').classList.toggle('hidden',!area.children.length);
+}
+
+function processedCsv(){
+ let lines=[];
+ for(const c of CIRCUITS){
+   const s=state.series[c.id];
+   lines.push(c.id,'Frequency_Hz,Vin_Vpp,Vout_Vpp,Gain_dB,Phase_deg');
+   for(let i=0;i<s.rows.length;i++){
+     const row=s.rows[i];
+     const data=[row.f,s.input.kind==='complete'&&Number.isFinite(s.input.values[i])?s.input.values[i]:'',s.output.kind==='complete'&&Number.isFinite(s.output.values[i])?s.output.values[i]:'',s.mag.kind==='complete'&&Number.isFinite(s.mag.values[i])?s.mag.values[i]:'',s.phase.kind==='complete'&&Number.isFinite(s.phase.values[i])?s.phase.values[i]:''];
+     lines.push(data.map(csvEscape).join(','));
+   }
+   lines.push('');
+ }
+ return lines.join('\r\n')+'\r\n';
+}
+
+const NS='http://www.w3.org/2000/svg';function svg(tag,attrs={},text){let el=document.createElementNS(NS,tag);for(let [k,v] of Object.entries(attrs))el.setAttribute(k,String(v));if(text!==undefined)el.textContent=text;return el}function niceStep(span,n=7){let raw=Math.max(span/n,1e-9),pow=10**Math.floor(Math.log10(raw)),ratio=raw/pow;return (ratio<=1?1:ratio<=2?2:ratio<=2.5?2.5:ratio<=5?5:10)*pow}
+function drawPlot(c,kind){let values=state.series[c.id][kind].values,rows=state.series[c.id].rows,plot=svg('svg',{viewBox:'0 0 1000 615',xmlns:NS,role:'img','aria-label':c.short+' '+(kind==='mag'?'magnitude':'phase')+' response'});let W=1000,H=615,L=115,R=51,T=71,B=117,pw=W-L-R,ph=H-T-B;let logF=rows.map(r=>Math.log10(r.f)),xMin=Math.min(...logF),xMax=Math.max(...logF);if(xMin===xMax)xMax++;let validValues=values.filter(Number.isFinite),rawMin=Math.min(...validValues),rawMax=Math.max(...validValues);let analysis=state.series[c.id].analysis;if(kind==='mag'&&analysis){rawMin=Math.min(rawMin,analysis.level);rawMax=Math.max(rawMax,analysis.level)}if(rawMin===rawMax){rawMin-=1;rawMax+=1}let pad=(rawMax-rawMin)*.12,yMin=rawMin-pad,yMax=rawMax+pad,yStep=niceStep(yMax-yMin,7);yMin=Math.floor(yMin/yStep)*yStep;yMax=Math.ceil(yMax/yStep)*yStep;let X=f=>L+(Math.log10(f)-xMin)/(xMax-xMin)*pw,Y=v=>T+(yMax-v)/(yMax-yMin)*ph;plot.append(svg('rect',{x:0,y:0,width:W,height:H,fill:'white'}));plot.append(svg('text',{x:W/2,y:35,'text-anchor':'middle','font-size':25,'font-weight':700,fill:'#181818'},`${c.short} — ${kind==='mag'?'Magnitude Response':'Phase Response'}`));let majorTicks=[],dStart=Math.floor(xMin),dEnd=Math.ceil(xMax);for(let d=dStart;d<=dEnd;d++)for(let factor of [1,2,5]){let f=factor*10**d;if(f<10**xMin*.999999||f>10**xMax*1.000001)continue;let x=X(f),major=factor===1;plot.append(svg('line',{x1:x,y1:T,x2:x,y2:H-B,stroke:major?'#cdcdcd':'#eeeeee','stroke-width':major?1.3:1}));if(major)majorTicks.push({x,f})}for(let yy=Math.ceil((yMin-1e-9)/yStep)*yStep;yy<=yMax+yStep*1e-7;yy+=yStep){let y=Y(yy);plot.append(svg('line',{x1:L,y1:y,x2:W-R,y2:y,stroke:'#e4e4e4'}));plot.append(svg('text',{x:L-14,y:y+5,'text-anchor':'end','font-size':17,fill:'#454545'},fmtVal(Math.abs(yy)<1e-8?0:yy,3)))}for(let t of majorTicks){plot.append(svg('text',{x:t.x,y:H-B+31,'text-anchor':'middle','font-size':16,fill:'#444'},fmtHz(t.f)))}plot.append(svg('line',{x1:L,y1:T,x2:L,y2:H-B,stroke:'#181818','stroke-width':2}));plot.append(svg('line',{x1:L,y1:H-B,x2:W-R,y2:H-B,stroke:'#181818','stroke-width':2}));plot.append(svg('text',{x:L+pw/2,y:H-51,'text-anchor':'middle','font-size':20,fill:'#171717'},'Frequency, f (Hz) — logarithmic scale'));plot.append(svg('text',{x:33,y:T+ph/2,transform:`rotate(-90 33 ${T+ph/2})`,'text-anchor':'middle','font-size':20,fill:'#171717'},kind==='mag'?'Gain magnitude (dB)':'Phase (degrees)'));if(kind==='mag'&&analysis){let y=Y(analysis.level);plot.append(svg('line',{x1:L,y1:y,x2:W-R,y2:y,stroke:'#999','stroke-width':1.6,'stroke-dasharray':'7 6'}));plot.append(svg('text',{x:W-R-4,y:y-7,'text-anchor':'end','font-size':15,fill:'#666'},'Passband −3.01 dB'));if(analysis.fc){let x=X(analysis.fc);plot.append(svg('line',{x1:x,y1:T,x2:x,y2:H-B,stroke:'#6a6a6a','stroke-width':1.4,'stroke-dasharray':'6 5'}));plot.append(svg('circle',{cx:x,cy:y,r:6,fill:'white',stroke:'#111','stroke-width':2.4}))}}let points=rows.filter((r,i)=>Number.isFinite(values[i])).map(r=>`${X(r.f).toFixed(3)},${Y(values[rows.indexOf(r)]).toFixed(3)}`).join(' ');plot.append(svg('polyline',{points,fill:'none',stroke:'#fe5c00','stroke-width':3.6,'stroke-linejoin':'round','stroke-linecap':'round'}));rows.forEach((r,i)=>{if(!Number.isFinite(values[i]))return;let circle=svg('circle',{cx:X(r.f),cy:Y(values[i]),r:4,fill:'white',stroke:'#df5200','stroke-width':2.2});circle.append(svg('title',{},`${fmtHz(r.f)}: ${fmtVal(values[i],3)} ${kind==='mag'?'dB':'°'}`));plot.append(circle)});let footer=kind==='mag'?(analysis?.fc?`Measured fc ≈ ${fmtHz(analysis.fc)}    •    Theoretical fc = ${fmtHz(c.fc)}`:`No −3.01 dB crossing in sweep    •    Theoretical fc = ${fmtHz(c.fc)}`):`Measured phase of Vout relative to Vin   •   ${validValues.length} frequency points`;plot.append(svg('text',{x:W/2,y:H-15,'text-anchor':'middle','font-size':16,fill:'#555'},footer));return plot}
+function renderPlots(){let selectionInfo=selection(),target=$('plotGrid'),notices=$('plotMessages');notices.replaceChildren();target.replaceChildren();state.plots=[];if(!selectionInfo.selected.length){addMsg(notices,'bad','Select at least one circuit.');$('plotsSection').classList.add('hidden');return}for(let c of CIRCUITS){if(!selectionInfo.selected.includes(c.id))continue;for(let kind of selectionInfo.kinds){let item=state.series[c.id][kind];if(item.kind!=='complete')continue;let card=document.createElement('div');card.className='plot-panel';let title=document.createElement('h3');title.textContent=c.name+' — '+(kind==='mag'?'Magnitude':'Phase');let frame=document.createElement('div');frame.className='plot-frame';let chart=drawPlot(c,kind);frame.append(chart);let actions=document.createElement('div');actions.className='actions';let summary=document.createElement('span');summary.className='summary';summary.textContent=kind==='mag'?'20 log₁₀(|Vout/Vin|), dB':'Measured phase, degrees';let btn=document.createElement('button');btn.className='secondary';btn.textContent='Download PNG';btn.addEventListener('click',()=>svgPng(chart,`Lab6_${c.id}_${kind==='mag'?'Magnitude':'Phase'}.png`));actions.append(summary,btn);card.append(title,frame,actions);target.append(card);state.plots.push({chart,name:c.id+'_'+kind})}}if(!state.plots.length){addMsg(notices,'bad','No complete data for the requested selection.','Change the response type or select a circuit with complete measurements.');$('plotsSection').classList.add('hidden');$('allPngBtn').disabled=true}else{$('plotsSection').classList.remove('hidden');$('plotCount').textContent=`${state.plots.length} separate plot${state.plots.length===1?'':'s'} using the frequencies from its own table. No circuits are overlaid.`;$('allPngBtn').disabled=false;let skipped=[];for(let id of selectionInfo.selected){for(let kind of selectionInfo.kinds)if(state.series[id][kind].kind!=='complete')skipped.push(id+' '+(kind==='mag'?'magnitude':'phase'))}if(skipped.length)addMsg(notices,'warn','Unavailable responses skipped',skipped.join('; ')+'.')}$('plotBtn').textContent='Regenerate Selected Plots'}
+function pngImage(svgEl,w=2000,h=1230){return new Promise((res,rej)=>{let clone=svgEl.cloneNode(true);clone.setAttribute('width',w);clone.setAttribute('height',h);let xml=new XMLSerializer().serializeToString(clone);let url=URL.createObjectURL(new Blob([xml],{type:'image/svg+xml;charset=utf-8'}));let img=new Image();img.onload=()=>{URL.revokeObjectURL(url);res(img)};img.onerror=()=>{URL.revokeObjectURL(url);rej(Error('Could not render graph image.'))};img.src=url})}
+async function svgPng(plot,name){try{let img=await pngImage(plot),canvas=document.createElement('canvas');canvas.width=2000;canvas.height=1230;let ctx=canvas.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0,2000,1230);canvas.toBlob(blob=>{if(blob)download(blob,name)},'image/png')}catch(e){addMsg($('plotMessages'),'bad','PNG export failed',e.message)}}
+async function allPng(){if(!state.plots.length)return;try{let count=state.plots.length,cols=count===1?1:2,rows=Math.ceil(count/cols),w=1100,h=677,gap=15,canvas=document.createElement('canvas');canvas.width=cols*w+(cols-1)*gap;canvas.height=rows*h+(rows-1)*gap;let ctx=canvas.getContext('2d');ctx.fillStyle='white';ctx.fillRect(0,0,canvas.width,canvas.height);for(let i=0;i<count;i++){let im=await pngImage(state.plots[i].chart,w,h);ctx.drawImage(im,(i%cols)*(w+gap),Math.floor(i/cols)*(h+gap),w,h)}canvas.toBlob(blob=>{if(blob)download(blob,'Lab6_Selected_Separate_Plots.png')},'image/png')}catch(e){addMsg($('plotMessages'),'bad','Combined PNG export failed',e.message)}}
+async function fileRead(file){if(!file)return;if(!/\.csv$/i.test(file.name)&&!file.type.includes('csv')){addMsg($('messages'),'bad','Please select a .csv file.');return}try{readFileContent(await file.text(),file.name)}catch(e){addMsg($('messages'),'bad','Could not read the file',e.message)}}
+// The CSV template is a real, versioned file. The anchor above downloads it directly from GitHub Pages.
+$('demoBtn').addEventListener('click',()=>readFileContent(demoText(),'Synthetic example — 10–12 GHz cutoffs; not student measurements'));
+$('resetBtn').addEventListener('click',clear);
+$('csvFile').addEventListener('change',e=>fileRead(e.target.files[0]));
+for(let ev of ['dragenter','dragover'])$('drop').addEventListener(ev,e=>{e.preventDefault();$('drop').classList.add('drag')});
+for(let ev of ['dragleave','drop'])$('drop').addEventListener(ev,e=>{e.preventDefault();$('drop').classList.remove('drag')});
+$('drop').addEventListener('drop',e=>fileRead(e.dataTransfer.files[0]));
+$('plotBtn').addEventListener('click',renderPlots);
+$('allPngBtn').addEventListener('click',allPng);
+$('processedBtn').addEventListener('click',()=>{if(state.seen)downloadText(processedCsv(),'ECEN2714_Lab6_Processed.csv')});
+$('circuitChecks').addEventListener('change',renderPlots);
+document.querySelectorAll('input[name="response"]').forEach(e=>e.addEventListener('change',renderPlots));
+})();
+</script>
+</body>
+</html>
