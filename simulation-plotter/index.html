@@ -1,0 +1,610 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#162334">
+  <meta name="description" content="Plot LTspice text exports with selectable traces, LaTeX labels, and annotated cursors.">
+  <title>Simulation Plotter | LTspice</title>
+  <style>
+:root{--navy:#172637;--navy-deep:#112031;--orange:#f57630;--orange-soft:#fff0e6;--bg:#f4f7fa;--line:#e1e8ee;--ink:#263545;--muted:#718092;--white:#fff;--shadow:0 12px 34px rgba(23,38,55,.045);font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink)}*{box-sizing:border-box}body{margin:0;background:var(--bg);font-size:13px}button,input,select,textarea{font:inherit}button{cursor:pointer}button:disabled{opacity:.45;cursor:not-allowed}a{color:inherit}input,select,textarea{outline:none}input:focus,select:focus,textarea:focus{border-color:var(--orange)!important;box-shadow:0 0 0 3px rgba(245,118,48,.12)}.hidden{display:none!important}.masthead{height:82px;background:var(--navy-deep);color:#fff;display:flex;align-items:center;gap:14px;padding:0 30px;border-bottom:3px solid var(--orange)}.brand-icon{width:43px;height:43px;background:#23394f;color:#ff873d;border:1px solid #385068;border-radius:12px;padding:6px}.brand-icon svg{width:100%;height:100%}.brand{display:flex;flex-direction:column;gap:4px}.brand strong{font-size:20px;letter-spacing:-.5px;line-height:1}.brand strong span{color:#ff9555}.overline,.eyebrow{font-size:10px;letter-spacing:1.55px;font-weight:800;color:#899fb2}.header-actions{margin-left:auto;display:flex;gap:25px;align-items:center}.privacy-chip{display:flex;align-items:center;gap:9px;border:1px solid #40546a;color:#c6d7e3;border-radius:50px;padding:9px 13px;font-size:11px}.privacy-dot,.live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#60caa3}.header-link{text-decoration:none;font-size:12px;font-weight:600;color:#ecf2f6}.workspace{display:grid;grid-template-columns:345px minmax(0,1fr);min-height:calc(100vh - 82px)}.sidebar{background:#fff;border-right:1px solid var(--line);padding:0 24px 35px;min-width:0}.side-section{padding:27px 0 26px;border-bottom:1px solid var(--line)}.side-section:last-child{border-bottom:none}.section-heading{display:flex;align-items:center;gap:12px;margin-bottom:19px}.section-number{display:grid;place-items:center;width:29px;height:29px;border-radius:9px;background:var(--orange-soft);color:#e26220;font-weight:800;font-size:12px}.section-heading h2{font-size:14px;margin:0;letter-spacing:-.1px;color:#26394d}.dropzone{border:1.5px dashed #bdcad5;background:#fafcfe;border-radius:12px;min-height:167px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;cursor:pointer;padding:13px;transition:.2s}.dropzone:hover,.dropzone.dragging{border-color:var(--orange);background:#fff8f3}.upload-symbol{height:34px;width:34px;border-radius:11px;display:grid;place-items:center;color:var(--orange);background:#fff0e6;font-size:23px;font-weight:600;margin-bottom:5px}.dropzone strong{font-size:12px}.dropzone span:not(.upload-symbol){color:var(--muted);font-size:11px}.dropzone small{color:#9aa8b5;font-size:10px;margin-top:5px}.status{margin-top:12px;color:#7a8896;font-size:11px;line-height:1.5}.status.success{color:#267a59}.status.error{color:#b63838}.file-details{background:#f8fafc;border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-size:11px;margin-top:10px;color:#516376;line-height:1.7;word-break:break-word}.file-details strong{color:#304257}.mini-actions{display:flex;justify-content:space-between;gap:8px;margin-top:12px}.text-button{background:none;color:#cc5d20;font-size:11px;font-weight:650;padding:2px 0;border:0}.text-button:hover{text-decoration:underline}.detected-label,.field-title{font-size:11px;font-weight:750;color:#405266}.detected-label{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}.detected-label span{background:#edf2f6;color:#607388;font-size:10px;padding:3px 8px;border-radius:12px}.array-list{max-height:178px;overflow:auto;border:1px solid var(--line);border-radius:9px;padding:5px;margin-bottom:15px;background:#fbfcfe}.array-item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:7px 9px;border-bottom:1px solid #edf1f4;font-size:11px;min-height:32px}.array-item:last-child{border:0}.array-item span{overflow-wrap:anywhere}.array-item small{flex-shrink:0;color:#8191a1}.field{display:flex;flex-direction:column;gap:7px;margin:0 0 14px}.field>span{font-size:11px;font-weight:700;color:#485b6e}.field input,.field select,.field textarea,.legend-line input[type=text],.manual-pin input,.manual-pin select{height:37px;width:100%;border:1px solid #dbe3eb;border-radius:7px;background:#fff;padding:0 10px;color:#263a4c;min-width:0}.field input::placeholder{color:#abb6c1}.field select{padding-right:18px}.segmented{display:flex;border:1px solid #dae3eb;padding:3px;border-radius:9px;background:#f4f7fa;gap:4px}.segmented button{border:0;background:transparent;flex:1;border-radius:6px;padding:9px 7px;font-size:11px;color:#748496;font-weight:650}.segmented button.active{color:#dd6022;background:#fff;box-shadow:0 2px 6px rgba(27,44,65,.1)}.trace-options{display:flex;flex-direction:column;gap:4px;max-height:226px;overflow:auto}.trace-option{display:flex;align-items:center;gap:9px;padding:9px 10px;border:1px solid var(--line);border-radius:8px;cursor:pointer;font-size:11px;line-height:1.35}.trace-option:hover{border-color:#f3b995}.trace-option.selected{background:#fff9f5;border-color:#ffc69f}.trace-option input{accent-color:var(--orange);flex-shrink:0;width:15px;height:15px;margin:0;align-self:center}.trace-option span{overflow-wrap:anywhere}.legend-config{margin:12px 0 0}.legend-config h3{margin:2px 0 9px;font-size:11px;color:#526679}.legend-line{display:flex;gap:7px;align-items:center;margin-bottom:8px}.legend-line input[type=color]{width:30px;height:32px;flex-shrink:0;padding:2px;border:1px solid var(--line);border-radius:6px;background:#fff}.legend-line input[type=text]{flex:1;height:32px;font-size:11px}.help-copy,.hint{font-size:11px;color:#79889a;line-height:1.6;margin:-6px 0 16px}.hint{margin:-3px 0 12px}.hint code{font-size:10px;color:#a8501b;background:#fff4ec;padding:4px;border-radius:4px}.primary,.secondary,.tool-button{border-radius:8px;font-weight:750}.primary{border:1px solid #e9692a;background:var(--orange);color:#fff;padding:11px 14px;box-shadow:0 4px 12px rgba(245,118,48,.14)}.primary:hover{background:#e86628}.primary span{float:right}.full{width:100%}.subtle-status{min-height:17px;font-size:10px;color:#7b8b9c;margin-top:8px}.check-row{display:flex;align-items:center;gap:9px;margin:12px 0;color:#536579;font-size:11px}.check-row input{accent-color:var(--orange)}.two-col{display:grid;grid-template-columns:1fr 1fr;gap:10px}.main-content{min-width:0;padding:32px 34px 50px;max-width:1660px;width:100%;margin:0 auto}.main-toolbar{display:flex;align-items:center;justify-content:space-between;gap:24px;margin-bottom:25px;flex-wrap:wrap}.eyebrow{color:#ef7734;font-size:10px;margin-bottom:7px}.main-toolbar h1{font-size:26px;letter-spacing:-.8px;margin:0 0 6px;color:#192b3d;font-weight:780}.main-toolbar p{margin:0;font-size:12px;color:#82909e}.export-actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.tool-button{border:1px solid #d7e1ea;background:white;color:#506479;padding:10px 12px;font-size:11px;white-space:nowrap;text-decoration:none;display:inline-block}.tool-button:hover:not(:disabled){border-color:var(--orange);color:#ca5920}.as-label{cursor:pointer}.plot-card,.cursor-card,.guide-card{background:#fff;border:1px solid var(--line);border-radius:13px;box-shadow:var(--shadow)}.plot-card{overflow:hidden}.plot-meta{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:16px 21px;border-bottom:1px solid #edf1f5;color:#8593a1;font-size:11px;flex-wrap:wrap}.live-tag{color:#4e6578;font-weight:760}.live-tag .live-dot{background:#a7bac9;margin-right:6px}.plot-card.ready .live-tag .live-dot{background:#4bc597}.empty-plot{min-height:500px;padding:60px 15px 50px;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center}.illustration{background:#fafbfe;width:250px;height:175px;display:grid;place-items:center;border-radius:26px;margin-bottom:16px}.illustration svg{width:220px}.empty-plot h2{font-size:18px;margin:5px 0 7px;color:#304257}.empty-plot p{max-width:335px;font-size:12px;line-height:1.8;color:#8d9ba9;margin:0}.plot-card #plot{height:610px;min-width:0;width:100%}.cursor-card{margin-top:23px;padding:24px}.cursor-header{display:flex;align-items:flex-start;justify-content:space-between;gap:18px}.cursor-header h2,.guide-card h2{margin:0 0 7px;color:#233548;font-size:17px;letter-spacing:-.2px}.cursor-header p,.guide-card p{margin:0;color:#8492a0;font-size:11px;line-height:1.6}.secondary{background:#fff;color:#d96727;border:1px solid #f3b88e;padding:10px 13px;white-space:nowrap;font-size:11px}.secondary:hover,.secondary.armed{background:#fff1e8;border-color:#eb823e}.cursor-instructions{margin:16px 0 12px;padding:10px 12px;border-radius:8px;background:#f7f9fb;color:#637789;font-size:11px;line-height:1.7}.cursor-instructions.armed{background:#fff3e7;color:#b7541f}.manual-pin{display:grid;grid-template-columns:minmax(110px,1fr) minmax(130px,1.3fr) auto;align-items:end;gap:12px;margin:13px 0 18px}.manual-pin .field{margin:0}.manual-pin button{height:37px}.cursor-list{display:flex;flex-direction:column;gap:9px}.cursor-item{display:grid;grid-template-columns:28px minmax(0,1fr) auto;align-items:start;gap:11px;border:1px solid var(--line);padding:13px;border-radius:9px}.cursor-index{background:#fff2e8;color:#c95a21;border-radius:7px;padding:7px;text-align:center;font-weight:900;font-size:11px}.cursor-info{min-width:0}.cursor-info strong{font-size:12px;color:#304358}.cursor-info small{display:block;font-size:10px;color:#78899a;margin:5px 0 9px;word-break:break-word}.cursor-info input{width:100%;height:34px;border-radius:6px;border:1px solid #dae3eb;padding:7px 9px;font-size:11px}.cursor-delete{background:none;border:0;color:#b45745;padding:5px;font-size:15px}.no-cursors{font-size:11px;color:#8b99a8;padding:4px 0}.guide-card{margin-top:23px;padding:24px 26px}.guide-card ol{margin:17px 0;padding-left:21px;color:#536578;font-size:12px;line-height:2.1}.guide-card li{padding-left:4px}.guide-card p{border-top:1px solid var(--line);padding-top:12px;margin-top:9px}.notice{border:1px solid #efbd9c;background:#fff8f2;color:#a95323;border-radius:9px;padding:12px 15px;font-size:12px;margin-bottom:16px;line-height:1.5}.notice.error{background:#fff4f4;border-color:#ecc2c2;color:#b03b3b}.notice.good{background:#effaf5;border-color:#b4e4cf;color:#26805d}kbd{font-family:inherit;background:#f0f3f7;border:1px solid #dee5ec;border-radius:4px;padding:1px 4px;color:#485b6f;font-size:10px}@media(max-width:1180px){.workspace{grid-template-columns:315px minmax(0,1fr)}.sidebar{padding:0 18px 30px}.main-content{padding:25px 22px}.export-actions{width:100%}}@media(max-width:800px){.masthead{padding:0 16px;height:70px}.privacy-chip{display:none}.header-link{font-size:11px}.workspace{grid-template-columns:1fr}.sidebar{border-right:0;border-bottom:1px solid var(--line);padding:0 20px 16px}.main-content{padding:22px 15px}.side-section{padding:20px 0}.plot-card #plot{height:490px}.empty-plot{min-height:360px}.main-toolbar h1{font-size:22px}.manual-pin{grid-template-columns:1fr 1fr}.manual-pin button{grid-column:1/-1}}@media(max-width:480px){.header-link{display:none}.brand strong{font-size:18px}.main-toolbar{gap:16px}.tool-button{padding:9px}.plot-meta{padding:13px}.cursor-card,.guide-card{padding:17px}.cursor-header{flex-wrap:wrap}.manual-pin{grid-template-columns:1fr}.manual-pin button{grid-column:1}.plot-card #plot{height:440px}}
+
+  </style>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_SVG"></script>
+  <script defer src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+
+
+</head>
+<body>
+  <div class="app-shell">
+    <header class="masthead">
+      <div class="brand-icon" aria-hidden="true"><svg viewBox="0 0 40 40" fill="none"><path d="M4 30h7l6-15 6 18 5-12 3 5h5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 35h32" stroke="currentColor" opacity=".35"/></svg></div>
+      <div class="brand"><span class="overline">ECEN 2714 · SIMULATION TOOLS</span><strong>LTspice <span>Plotter</span></strong></div>
+      <div class="header-actions"><span class="privacy-chip"><span class="privacy-dot"></span> Processed in your browser</span><a class="header-link" href="#guide">How to export <span aria-hidden="true">↗</span></a></div>
+    </header>
+    <div class="workspace">
+      <aside class="sidebar" aria-label="Plot controls">
+        <section class="side-section" id="importSection">
+          <div class="section-heading"><span class="section-number">01</span><h2>Import data</h2></div>
+          <label id="dropzone" class="dropzone" for="fileInput"><input id="fileInput" type="file" accept=".txt,.csv,.tsv,text/plain,text/csv" hidden>
+            <span class="upload-symbol" aria-hidden="true">↑</span><strong>Drop an LTspice .txt file here</strong><span>or click to browse your computer</span><small>Text export · .txt / .csv / .tsv</small>
+          </label>
+          <div id="importStatus" class="status" role="status" aria-live="polite">No data loaded yet.</div>
+          <div id="fileDetails" class="file-details hidden"></div>
+          <div class="mini-actions"><button type="button" id="demoTransient" class="text-button">Try transient example</button><button type="button" id="demoAC" class="text-button">Try AC example</button></div>
+        </section>
+        <section class="side-section hidden" id="dataSection">
+          <div class="section-heading"><span class="section-number">02</span><h2>Select arrays</h2></div>
+          <div class="detected-label">Arrays detected <span id="arrayCount"></span></div>
+          <div id="arrayList" class="array-list" aria-live="polite"></div>
+          <label class="field"><span>Simulation run</span><select id="runSelect"></select></label>
+          <label class="field"><span>X-axis array</span><select id="xSelect"></select></label>
+          <div class="field"><span class="field-title">Trace mode</span><div class="segmented" role="group" aria-label="Trace mode"><button class="active" data-mode="single" type="button">Single trace</button><button data-mode="multiple" type="button">Multiple traces</button></div></div>
+          <div class="field"><span class="field-title">Y-axis traces</span><div id="traceOptions" class="trace-options"></div></div>
+          <div id="legendConfig" class="legend-config"></div>
+        </section>
+        <section class="side-section hidden" id="labelSection">
+          <div class="section-heading"><span class="section-number">03</span><h2>Figure labels</h2></div>
+          <p class="help-copy">Type labels first, then press <kbd>Enter</kbd> to render LaTeX and apply your changes.</p>
+          <label class="field"><span>Title</span><input id="titleInput" class="label-input" placeholder="Circuit simulation"></label>
+          <label class="field"><span>Subtitle</span><input id="subtitleInput" class="label-input" placeholder="Optional subtitle"></label>
+          <label class="field"><span>X-axis label</span><input id="xLabelInput" class="label-input" placeholder="Time (s)"></label>
+          <label class="field"><span>Y-axis label</span><input id="yLabelInput" class="label-input" placeholder="Voltage (V)"></label>
+          <div class="hint">Example: <code>$V_{\mathrm{out}}$ (V)</code></div>
+          <button class="primary full" id="applyLabels" type="button">Apply labels <span>↵</span></button>
+          <div id="latexStatus" class="subtle-status" aria-live="polite"></div>
+        </section>
+        <section class="side-section hidden" id="displaySection">
+          <div class="section-heading"><span class="section-number">04</span><h2>Plot appearance</h2></div>
+          <div class="two-col"><label class="field"><span>X scale</span><select id="xScale"><option value="linear">Linear</option><option value="log">Logarithmic</option></select></label><label class="field"><span>Y scale</span><select id="yScale"><option value="linear">Linear</option><option value="log">Logarithmic</option></select></label></div>
+          <label class="check-row"><input type="checkbox" id="markers"> Show data-point markers</label>
+          <label class="check-row"><input type="checkbox" id="gridToggle" checked> Show gridlines</label>
+          <label class="check-row"><input type="checkbox" id="legendToggle" checked> Show trace legend</label>
+        </section>
+      </aside>
+      <main class="main-content">
+        <div class="main-toolbar"><div><div class="eyebrow">FIGURE WORKSPACE</div><h1>Simulation Data Viewer</h1><p>From LTspice export to report-ready plots.</p></div><div class="export-actions"><button id="exportPNG" class="tool-button" type="button" disabled>↓ PNG</button><button id="exportSVG" class="tool-button" type="button" disabled>↓ SVG</button><button id="saveConfig" class="tool-button" type="button" disabled>Save setup</button><label for="loadConfig" class="tool-button as-label">Load setup</label><input id="loadConfig" type="file" accept=".json,application/json" hidden></div></div>
+        <div id="notice" class="notice hidden" role="alert"></div>
+        <section class="plot-card" aria-label="Graph">
+          <div class="plot-meta"><div class="live-tag"><span class="live-dot"></span> <span id="plotState">No dataset</span></div><span id="plotStats">Import a text export to begin</span></div>
+          <div id="emptyPlot" class="empty-plot"><div class="illustration"><svg viewBox="0 0 220 135" fill="none" aria-hidden="true"><path d="M25 10v105h184" stroke="#b7c4d3" stroke-width="2"/><path d="M25 92C49 91 56 91 67 84s13-51 25-52 17 51 31 56 18 3 31 0 16-43 27-46 12 44 27 45" stroke="#f56f2b" stroke-width="4" stroke-linecap="round"/><path d="M25 55h184M25 15h184M25 115h184" stroke="#e6ecf2" stroke-dasharray="5 4"/><circle cx="92" cy="32" r="5" fill="#fff" stroke="#f56f2b" stroke-width="3"/></svg></div><h2>Your plot starts here</h2><p>Import a text file exported from LTspice, or try one of the sample datasets in the left panel.</p></div>
+          <div id="plot" class="hidden" aria-label="Interactive waveform chart"></div>
+        </section>
+        <section class="cursor-card hidden" id="cursorSection"><div class="cursor-header"><div><div class="eyebrow">POINT ANNOTATIONS</div><h2>Measurement cursors</h2><p>Pin a precise sample and attach a comment for your figure.</p></div><button id="armCursor" class="secondary" type="button">+ Add cursor</button></div>
+          <div class="cursor-instructions" id="cursorInstructions">Click <strong>Add cursor</strong>, then click a point on a trace. The annotation stays anchored to that exact sample.</div>
+          <div class="manual-pin"><label class="field"><span>Or pin nearest X value</span><input id="manualX" placeholder="e.g. 0.0025" inputmode="decimal"></label><label class="field"><span>Trace</span><select id="manualTrace"></select></label><button id="pinAtX" class="secondary" type="button">Pin point</button></div>
+          <div id="cursorList" class="cursor-list"><div class="no-cursors">No cursors added yet.</div></div>
+        </section>
+        <section class="guide-card" id="guide"><div><div class="eyebrow">QUICK GUIDE</div><h2>Exporting data from LTspice</h2></div><ol><li>Run the simulation and open its waveform viewer.</li><li>Display the voltage or current traces you need.</li><li>In the waveform viewer, select <strong>File → Export data as text</strong> (in some versions, <strong>Plot File → Export data as text</strong>).</li><li>Select the traces and save the resulting <strong>.txt</strong> file, then import it above.</li></ol><p>Do not export the binary <code>.raw</code> file. Text data is processed locally in your browser; rendering libraries are loaded from a CDN.</p></section>
+      </main>
+    </div>
+  </div>
+  <script>
+/* LTspice Export Data as Text parser — works without any external libraries. */
+(function (root, factory) {
+  const api = factory();
+  if (typeof module === 'object' && module.exports) module.exports = api;
+  if (root) root.LTParser = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this, function () {
+  'use strict';
+
+  const NUM = '[+-]?(?:(?:\\d+(?:\\.\\d*)?|\\.\\d+)(?:[eE][+-]?\\d+)?)';
+  const PAIR = new RegExp('^\\(?\\s*(' + NUM + ')\\s*,\\s*(' + NUM + ')\\s*[^0-9,)]*\\)?$');
+  const ENG = {t:1e12,g:1e9,meg:1e6,k:1e3,m:1e-3,u:1e-6,'µ':1e-6,n:1e-9,p:1e-12,f:1e-15};
+
+  function numeric(s) {
+    if (typeof s === 'number') return Number.isFinite(s) ? s : NaN;
+    s = String(s ?? '').replace(/\uFEFF/g, '').trim();
+    if (!s) return NaN;
+    const m = s.match(/^([+-]?(?:(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?))\s*(meg|[tgkmunpfµ])?\s*$/i);
+    if (!m) return NaN;
+    return Number(m[1]) * (m[2] ? ENG[m[2].toLowerCase()] : 1);
+  }
+
+  function splitCSV(line, delimiter) {
+    const result = [];
+    let str = '', quoted = false;
+    for (let i = 0; i < line.length; i++) {
+      const c = line[i];
+      if (c === '"') {
+        if (quoted && line[i+1] === '"') {str += '"'; i++;}
+        else quoted = !quoted;
+      } else if (c === delimiter && !quoted) {
+        result.push(str.trim()); str = '';
+      } else str += c;
+    }
+    result.push(str.trim());
+    return result;
+  }
+
+  function detectDelimiter(header) {
+    if (header.includes('\t')) return '\t';
+    if ((header.match(/;/g) || []).length >= 1) return ';';
+    if ((header.match(/,/g) || []).length >= 1) return ',';
+    return 'whitespace';
+  }
+
+  function splitLine(line, delimiter) {
+    if (delimiter === 'whitespace') return line.trim().split(/\s+/);
+    return splitCSV(line, delimiter);
+  }
+
+  function complexValue(s) {
+    s = String(s ?? '').trim().replace(/^"|"$/g, '');
+    const db = /db/i.test(s);
+    // Numerical part of each half; tolerate LTspice's degree symbol or Windows replacement character.
+    const normalized = s.replace(/dB/ig, '').replace(/\u00B0|\uFFFD|\u00BA/g, '').replace(/^\(/, '').replace(/\)$/, '');
+    const m = normalized.match(new RegExp('^\\s*(' + NUM + ')\\s*,\\s*(' + NUM + ')\\s*$'));
+    if (!m) return null;
+    const a = Number(m[1]), b = Number(m[2]);
+    if (!Number.isFinite(a) || !Number.isFinite(b)) return null;
+    let real, imag, mag, phase, magnitudeDb;
+    if (db) {
+      magnitudeDb = a;
+      phase = b;
+      mag = Math.pow(10, a/20);
+      real = mag * Math.cos(b*Math.PI/180);
+      imag = mag * Math.sin(b*Math.PI/180);
+    } else {
+      real = a; imag = b;
+      mag = Math.hypot(a,b);
+      magnitudeDb = mag > 0 ? 20*Math.log10(mag) : NaN;
+      phase = Math.atan2(b,a)*180/Math.PI;
+    }
+    return {real,imag,mag,phase,db:magnitudeDb,kind:db?'dbphase':'cartesian'};
+  }
+
+  function classifyHeader(parts) {
+    if (parts.length < 2 || parts.length > 150) return false;
+    const clean = parts.filter(Boolean);
+    if (clean.length < 2) return false;
+    return clean.some(s => /[a-zA-Z][a-zA-Z0-9_()\[\].:/+-]*/.test(s)) &&
+      clean.some(s => /^(time|freq\.?|frequency|v\(|i\(|v[_a-z]|i[_a-z]|\w)/i.test(s)) &&
+      numeric(clean[0]) !== numeric(clean[0]);
+  }
+
+  function uniqueHeaders(headers) {
+    const counts = new Map();
+    return headers.map((h,i) => {
+      h = String(h || `Column ${i+1}`).trim();
+      const count = (counts.get(h)||0)+1;
+      counts.set(h,count);
+      return count > 1 ? `${h} (${count})` : h;
+    });
+  }
+
+  function parse(text, filename='simulation.txt') {
+    if (typeof text !== 'string' || !text.trim()) throw new Error('The file is empty.');
+    const lines = text.replace(/^\uFEFF/,'').split(/\r\n|\n|\r/);
+    let header=null, delimiter='\t', active=null, steps=[], issueCount=0, pendingStep=null;
+    let lastHeaderLine = -1;
+
+    function beginBlock(label='Run 1') {
+      active = {name:label, headers:header ? [...header] : [], cells:[], skipped:0};
+      steps.push(active);
+    }
+    function normalizedPartCells(parts, expected) {
+      parts = parts.map(s=>s.trim());
+      while (parts.length > expected && parts[parts.length - 1] === '') parts.pop();
+      // A comma-separated file may contain unquoted complex numbers in the last column.
+      if (delimiter === ',' && parts.length > expected && expected === 2) parts = [parts[0],parts.slice(1).join(',')];
+      return parts;
+    }
+
+    for (let lineIndex=0;lineIndex<lines.length;lineIndex++) {
+      let line=lines[lineIndex].trim();
+      if (!line || /^#/.test(line)) continue;
+      const stepMatch=line.match(/^step\s+information\s*:\s*(.*)$/i);
+      if (stepMatch) {
+        const desc=stepMatch[1].trim();
+        pendingStep = desc || `Run ${steps.length+1}`;
+        // A new block starts only on the next header or data row.
+        active=null;
+        continue;
+      }
+      if (/^(?:step\s*\d+\s+of\s+\d+|step\s*\d+\s*:)$/i.test(line)) {active=null;pendingStep=line;continue;}
+      if (/^(?:plotname|flags|variables|values|no\.\s*variables|no\.\s*points)\s*:/i.test(line)) continue;
+      const candidateDelimiter = detectDelimiter(line);
+      const candidate = splitLine(line,candidateDelimiter);
+      if (classifyHeader(candidate)) {
+        // Ignore text that looks like a banner (e.g. LTspice version strings).
+        if (candidate[0] && /^(time|freq\.?|frequency|step|sweep|v\(|i\(|v\[|i\[|[A-Za-z_][A-Za-z0-9_]*$)/i.test(candidate[0])) {
+          header=uniqueHeaders(candidate);
+          delimiter=candidateDelimiter;
+          lastHeaderLine=lineIndex;
+          if (active && active.cells.length) active=null;
+          continue;
+        }
+      }
+      if (!header) continue;
+      let cells=normalizedPartCells(splitLine(line,delimiter),header.length);
+      if (cells.length !== header.length) {issueCount++;continue;}
+      const first=numeric(cells[0]);
+      if (!Number.isFinite(first)) {issueCount++;continue;}
+      if (!active) beginBlock(pendingStep || (steps.length?`Run ${steps.length+1}`:'Run 1'));
+      const isValid=cells.slice(1).some(s=>Number.isFinite(numeric(s)) || complexValue(s));
+      if (!isValid) {active.skipped++;issueCount++;continue;}
+      active.cells.push(cells);
+    }
+    steps=steps.filter(s=>s.cells.length>0);
+    if (!header || !steps.length) throw new Error('No valid LTspice data table found. Export traces from the LTspice waveform viewer using File → Export data as text. This tool does not read binary .raw files.');
+    if (steps.length>100) throw new Error('The file contains too many simulation runs (more than 100).');
+
+    const allTypes=header.map((h,i) => {
+      if (i===0) return 'numeric';
+      let detected=null;
+      for(const b of steps) for(const row of b.cells.slice(0,50)) {
+        const v=row[i];
+        if(Number.isFinite(numeric(v))) {detected='numeric';break;}
+        const c=complexValue(v);
+        if(c) {detected=c.kind;break;}
+      }
+      return detected || 'numeric';
+    });
+    const fields=[];
+    for(let j=0;j<header.length;j++) {
+      const name=header[j], type=allTypes[j];
+      if(type==='numeric') fields.push({id:`c${j}`,name,source:j,kind:'numeric'});
+      else {
+        fields.push({id:`c${j}-db`,name:`${name} · Magnitude (dB)`,source:j,kind:'db'});
+        fields.push({id:`c${j}-phase`,name:`${name} · Phase (°)`,source:j,kind:'phase'});
+        fields.push({id:`c${j}-mag`,name:`${name} · Magnitude (linear)`,source:j,kind:'mag'});
+        fields.push({id:`c${j}-real`,name:`${name} · Real`,source:j,kind:'real'});
+        fields.push({id:`c${j}-imag`,name:`${name} · Imaginary`,source:j,kind:'imag'});
+      }
+    }
+    const outputSteps=steps.map((b,i)=>{
+      const columns={};
+      for(const f of fields) columns[f.id]=new Array(b.cells.length);
+      for(let rowIdx=0;rowIdx<b.cells.length;rowIdx++) {
+        const row=b.cells[rowIdx];
+        for(const f of fields) {
+          if(f.kind==='numeric') columns[f.id][rowIdx]=numeric(row[f.source]);
+          else {
+            const c=complexValue(row[f.source]);
+            columns[f.id][rowIdx]=c ? c[f.kind] : NaN;
+          }
+        }
+      }
+      return {id:`run${i}`,name:b.name,columns,rowCount:b.cells.length};
+    });
+    return {filename,fields,steps:outputSteps,rows:outputSteps.reduce((sum,b)=>sum+b.rowCount,0),ignoredLines:issueCount,delimiter:delimiter==='whitespace'?'spaces':delimiter,lastHeaderLine};
+  }
+
+  return {parse,numeric,complexValue,splitCSV};
+});
+
+</script>
+  <script>
+(function () {
+  'use strict';
+  const $=id=>document.getElementById(id);
+  const PALETTE=['#ef6c2f','#2466af','#17a398','#915fc1','#d64e65','#bf8d2d','#667ab5','#1c7886'];
+  const S={data:null,mode:'single',xId:null,selectedY:[],run:'run0',legends:{},labels:{title:'',subtitle:'',x:'',y:''},cursors:[],armed:false,traceMeta:[],plotReady:false,revision:0,nextCursor:1};
+  const esc=t=>String(t??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  const finite=Number.isFinite;
+  const byId=id=>S.data?.fields.find(f=>f.id===id);
+  let noticeTimer=null;
+  let plotClickBound=false;
+
+  function notify(msg,type='good',timeout=5300){
+    const el=$('notice');el.textContent=msg;el.className=`notice ${type}`;
+    clearTimeout(noticeTimer);
+    if(timeout)noticeTimer=setTimeout(()=>el.classList.add('hidden'),timeout);
+  }
+  function resetNotice(){clearTimeout(noticeTimer);$('notice').classList.add('hidden');}
+  function mathText(value){
+    let text=String(value??'').trim();
+    if(!text)return '';
+    text=text.replace(/\\\((.*?)\\\)/g,(_,m)=>`$${m}$`);
+    text=text.replace(/\\\[(.*?)\\\]/g,(_,m)=>`$${m}$`);
+    if(!text.includes('$') && /\\[A-Za-z]+|[_^]\{|\\[()]/.test(text)) return '$'+text+'$';
+    return esc(text).replace(/&amp;/g,'&'); // escaped HTML; preserve literal TeX delimiters
+  }
+  function formatValue(v){
+    if(!finite(v))return 'N/A';
+    if(v===0)return '0';
+    const a=Math.abs(v);
+    if(a>=1e5||a<1e-3)return v.toExponential(4);
+    return Number(v.toPrecision(7)).toString();
+  }
+  function valueForField(run,id,index){return run.columns[id]?.[index];}
+  function traceName(id){return S.legends[id]?.name || byId(id)?.name || id;}
+  function getActiveRuns(){return S.run==='all'?S.data.steps:S.data.steps.filter(s=>s.id===S.run);}
+  function xCandidates(){return S.data.fields;}
+  function yCandidates(){return S.data.fields.filter(f=>f.id!==S.xId);}
+  function defaultX(){return S.data.fields.find(f=>/^(time|freq\.?|frequency|sweep)/i.test(f.name))?.id || S.data.fields[0].id;}
+  function defaultY(){return yCandidates()[0]?.id;}
+  function defaultYLabel(field){
+    if(!field)return 'Value';
+    if(field.kind==='db')return 'Magnitude (dB)';
+    if(field.kind==='phase')return 'Phase (°)';
+    if(field.kind==='mag')return 'Magnitude (linear)';
+    if(/^v\(/i.test(field.name))return 'Voltage (V)';
+    if(/^i\(/i.test(field.name))return 'Current (A)';
+    return field.name;
+  }
+  function defaultXLabel(field){return /time/i.test(field.name)?'Time (s)':/freq/i.test(field.name)?'Frequency (Hz)':field.name;}
+
+  function loadData(text,name='simulation.txt'){
+    try{
+      const data=LTParser.parse(text,name);
+      S.data=data;S.mode='single';S.xId=defaultX();S.selectedY=[defaultY()].filter(Boolean);
+      S.run=data.steps[0].id;S.legends={};S.cursors=[];S.armed=false;S.plotReady=false;S.revision++;
+      S.labels={title:'Simulation response',subtitle:name,x:defaultXLabel(byId(S.xId)),y:defaultYLabel(byId(S.selectedY[0]))};
+      for(let i=0;i<data.fields.length;i++){
+        const f=data.fields[i];S.legends[f.id]={name:f.name,color:PALETTE[(i+PALETTE.length-1)%PALETTE.length]};
+      }
+      $('dataSection').classList.remove('hidden');$('labelSection').classList.remove('hidden');$('displaySection').classList.remove('hidden');$('cursorSection').classList.remove('hidden');
+      $('importStatus').className='status success';$('importStatus').textContent='✓ Data parsed successfully';
+      $('fileDetails').classList.remove('hidden');$('fileDetails').innerHTML=`<strong>${esc(name)}</strong><br>${data.rows.toLocaleString()} data points · ${data.fields.length} available arrays · ${data.steps.length} run${data.steps.length!==1?'s':''}${data.ignoredLines?` · ${data.ignoredLines} ignored lines`:''}`;
+      $('plotState').textContent=name;
+      $('titleInput').value=S.labels.title;$('subtitleInput').value=S.labels.subtitle;$('xLabelInput').value=S.labels.x;$('yLabelInput').value=S.labels.y;
+      $('xScale').value='linear';$('yScale').value='linear';$('markers').checked=false;$('gridToggle').checked=true;$('legendToggle').checked=true;
+      resetNotice();rebuildControls();render();
+      notify(`Found ${data.fields.length} plottable arrays from ${data.rows.toLocaleString()} rows${data.steps.length>1?` across ${data.steps.length} runs`:''}.`);
+    }catch(err){$('importStatus').className='status error';$('importStatus').textContent=err.message;notify(err.message,'error',0);}
+  }
+
+  function rebuildControls(){
+    $('arrayCount').textContent=S.data.fields.length;
+    $('arrayList').innerHTML=S.data.fields.map(f=>`<div class="array-item"><span>${esc(f.name)}</span><small>${f.kind==='numeric'?'numeric':f.kind}</small></div>`).join('');
+    $('runSelect').innerHTML=(S.data.steps.length>1?'<option value="all">All runs (overlay)</option>':'')+S.data.steps.map(s=>`<option value="${esc(s.id)}">${esc(s.name)} — ${s.rowCount.toLocaleString()} points</option>`).join('');
+    $('runSelect').value=S.run;
+    $('xSelect').innerHTML=xCandidates().map(f=>`<option value="${esc(f.id)}">${esc(f.name)}</option>`).join('');
+    $('xSelect').value=S.xId;
+    document.querySelectorAll('[data-mode]').forEach(b=>b.classList.toggle('active',b.dataset.mode===S.mode));
+    rebuildTraceOptions();rebuildLegends();
+  }
+
+  function rebuildTraceOptions(){
+    const radio=S.mode==='single';
+    $('traceOptions').innerHTML=yCandidates().map(f=>{
+      const checked=S.selectedY.includes(f.id);
+      return `<label class="trace-option ${checked?'selected':''}"><input type="${radio?'radio':'checkbox'}" name="yTrace" value="${esc(f.id)}" ${checked?'checked':''}><span>${esc(f.name)}</span></label>`;
+    }).join('');
+    $('traceOptions').querySelectorAll('input').forEach(input=>input.addEventListener('change',()=>{
+      if(S.mode==='single')S.selectedY=[input.value];
+      else S.selectedY=input.checked?[...S.selectedY,input.value]:S.selectedY.filter(id=>id!==input.value);
+      S.cursors=S.cursors.filter(c=>S.selectedY.includes(c.fieldId));
+      S.labels.y=defaultYLabel(byId(S.selectedY[0]));$('yLabelInput').value=S.labels.y;
+      S.revision++;rebuildTraceOptions();rebuildLegends();render();
+    }));
+  }
+
+  function rebuildLegends(){
+    if(!S.selectedY.length){$('legendConfig').innerHTML='';return;}
+    $('legendConfig').innerHTML='<h3>Trace legends & colors</h3>'+S.selectedY.map(id=>`<div class="legend-line"><input type="color" aria-label="Color for ${esc(id)}" data-color="${esc(id)}" value="${esc(S.legends[id].color)}"><input type="text" aria-label="Legend for ${esc(id)}" data-legend="${esc(id)}" value="${esc(S.legends[id].name)}" title="Press Enter to apply"></div>`).join('');
+    $('legendConfig').querySelectorAll('[data-legend]').forEach(el=>el.addEventListener('keydown',e=>{
+      if(e.key==='Enter'){e.preventDefault();S.legends[el.dataset.legend].name=el.value.trim()||byId(el.dataset.legend).name;el.blur();render();}
+    }));
+    $('legendConfig').querySelectorAll('[data-color]').forEach(el=>el.addEventListener('input',()=>{S.legends[el.dataset.color].color=el.value;render();}));
+  }
+
+  function plotData(){
+    S.traceMeta=[];
+    const traces=[];const multiRun=getActiveRuns().length>1;
+    getActiveRuns().forEach(run=>{
+      S.selectedY.forEach(fieldId=>{
+        const xs=run.columns[S.xId],ys=run.columns[fieldId];
+        if(!xs||!ys)return;
+        const points=[];
+        for(let i=0;i<Math.min(xs.length,ys.length);i++){
+          if(finite(xs[i])&&finite(ys[i]) && ($('xScale').value!=='log'||xs[i]>0) && ($('yScale').value!=='log'||ys[i]>0))points.push(i);
+        }
+        if(!points.length)return;
+        const displayName=mathText(traceName(fieldId)+(multiRun?` — ${run.name}`:''));
+        const color=S.legends[fieldId].color;
+        const index=traces.length;
+        const renderType=points.length>13000?'scattergl':'scatter';
+        traces.push({x:points.map(i=>xs[i]),y:points.map(i=>ys[i]),customdata:points,mode:$('markers').checked?'lines+markers':'lines',type:renderType,name:displayName,connectgaps:false,hovertemplate:`${esc(byId(S.xId)?.name)}: %{x:.6g}<br>${esc(traceName(fieldId))}: %{y:.6g}<extra>${esc(run.name)}</extra>`,line:{color,width:2.35},marker:{size:5,color},showlegend:$('legendToggle').checked});
+        S.traceMeta[index]={runId:run.id,fieldId,key:run.id+'|'+fieldId,indices:points};
+      });
+    });
+    return traces;
+  }
+
+  function annotations(){
+    return S.cursors.filter(c=>S.selectedY.includes(c.fieldId)&&getActiveRuns().some(r=>r.id===c.runId)).map((c,j)=>{
+      const run=S.data.steps.find(r=>r.id===c.runId);if(!run)return null;
+      const x=valueForField(run,S.xId,c.index),y=valueForField(run,c.fieldId,c.index);
+      if(!finite(x)||!finite(y))return null;
+      const comment=String(c.comment||'').slice(0,280);
+      const label=`<b>C${c.id}</b> · ${esc(formatValue(x))}, ${esc(formatValue(y))}${comment?`<br>${esc(comment).replace(/\n/g,'<br>')}`:''}`;
+      return {x,y,xref:'x',yref:'y',text:label,showarrow:true,arrowhead:2,arrowsize:1,arrowwidth:1.2,arrowcolor:S.legends[c.fieldId]?.color||'#a65d31',ax:40+(j%3)*17,ay:-50-((j%2)*31),bordercolor:'#d6e1eb',borderwidth:1,borderpad:7,bgcolor:'rgba(255,255,255,.96)',font:{size:10,color:'#34475b'},align:'left',opacity:1};
+    }).filter(Boolean);
+  }
+  function render(){
+    if(!S.data)return;
+    if(!window.Plotly){notify('Plotting library could not be loaded. Check your internet connection and reload.','error',0);return;}
+    if(!S.selectedY.length){
+      $('plotStats').textContent='Select one or more Y-axis traces to continue';
+      if(S.plotReady)Plotly.purge($('plot'));
+      S.plotReady=false;$('plot').classList.add('hidden');$('emptyPlot').classList.remove('hidden');
+      $('exportPNG').disabled=true;$('exportSVG').disabled=true;$('saveConfig').disabled=true;return;
+    }
+    const traces=plotData();
+    if(!traces.length){notify('No finite, plottable points are available with the current axes and scales.','error',0);return;}
+    const title=mathText(S.labels.title),subtitle=mathText(S.labels.subtitle);
+    const layout={
+      paper_bgcolor:'#ffffff',plot_bgcolor:'#ffffff',font:{family:'Arial, Helvetica, sans-serif',size:12,color:'#455a6e'},
+      title:{text:title||' ',font:{size:21,color:'#24384b'},x:.5,xanchor:'center',y:.975,yanchor:'top',pad:{t:8,b:4}},
+      margin:{l:88,r:34,t:subtitle?119:89,b:84,pad:4},
+      xaxis:{title:{text:mathText(S.labels.x),standoff:15,font:{size:14,color:'#344a60'}},type:$('xScale').value,showline:true,linecolor:'#a8b8c7',linewidth:1,mirror:false,showgrid:$('gridToggle').checked,gridcolor:'#edf1f5',zeroline:true,zerolinecolor:'#dce4ed',ticks:'outside',tickcolor:'#9ab0c0',automargin:true},
+      yaxis:{title:{text:mathText(S.labels.y),standoff:15,font:{size:14,color:'#344a60'}},type:$('yScale').value,showline:true,linecolor:'#a8b8c7',linewidth:1,showgrid:$('gridToggle').checked,gridcolor:'#edf1f5',zeroline:true,zerolinecolor:'#dce4ed',ticks:'outside',tickcolor:'#9ab0c0',automargin:true},
+      hovermode:'closest',dragmode:'zoom',showlegend:$('legendToggle').checked,
+      legend:{orientation:'h',y:-.25,yanchor:'top',x:.5,xanchor:'center',font:{size:11},bgcolor:'#fff'},
+      annotations:annotations(),uirevision:`${S.revision}`,hoverlabel:{bgcolor:'#203247',font:{color:'white',size:11}}
+    };
+    if(subtitle)layout.annotations.unshift({text:subtitle,xref:'paper',yref:'paper',x:.5,y:1.12,showarrow:false,font:{size:11,color:'#79899b'},xanchor:'center',yanchor:'bottom'});
+    const config={responsive:true,displaylogo:false,scrollZoom:true,modeBarButtonsToRemove:['select2d','lasso2d','autoScale2d','toggleSpikelines'],toImageButtonOptions:{format:'png',filename:'ltspice-figure',height:800,width:1300,scale:2}};
+    $('emptyPlot').classList.add('hidden');$('plot').classList.remove('hidden');
+    $('plot').style.cursor=S.armed?'crosshair':'auto';
+    Promise.resolve(Plotly.react($('plot'),traces,layout,config)).then(()=>{
+      if(!plotClickBound){$('plot').on('plotly_click',onPlotClick);plotClickBound=true;}
+      S.plotReady=true;
+      $('exportPNG').disabled=false;$('exportSVG').disabled=false;$('saveConfig').disabled=false;
+      $('plot').parentNode.classList.add('ready');
+      const total=traces.reduce((sum,t)=>sum+t.x.length,0);
+      $('plotStats').textContent=`${traces.length} visible trace${traces.length>1?'s':''} · ${total.toLocaleString()} plotted samples`;
+      refreshManualTraces();renderCursorList();
+    }).catch(e=>notify('Plot rendering failed: '+e.message,'error',0));
+  }
+
+  function onPlotClick(event){
+    if(!S.armed || !event.points?.length)return;
+    const p=event.points.find(p=>S.traceMeta[p.curveNumber]);if(!p)return;
+    const meta=S.traceMeta[p.curveNumber];
+    // Plotly customdata is the original sample index, not the display point index.
+    const idx=Number(p.customdata ?? meta.indices[p.pointNumber]);
+    if(!Number.isInteger(idx))return;
+    addCursor(meta.runId,meta.fieldId,idx);
+    setArmed(false);
+  }
+  function setArmed(value){S.armed=Boolean(value);$('armCursor').classList.toggle('armed',S.armed);$('armCursor').textContent=S.armed?'Cancel cursor':'＋ Add cursor';$('cursorInstructions').classList.toggle('armed',S.armed);$('cursorInstructions').innerHTML=S.armed?'Cursor mode active: <strong>click a plotted sample</strong> to pin it, or cancel.':'Click <strong>Add cursor</strong>, then click a point on a trace. The annotation stays anchored to that exact sample.';$('plot').style.cursor=S.armed?'crosshair':'auto';}
+  function addCursor(runId,fieldId,index){
+    const run=S.data.steps.find(r=>r.id===runId);
+    if(!run || index<0||index>=run.rowCount)return;
+    S.cursors.push({id:S.nextCursor++,runId,fieldId,index,comment:''});
+    render();notify('Cursor pinned. Add a comment in the measurement cursor panel.');
+  }
+  function refreshManualTraces(){
+    const prior=$('manualTrace').value;
+    $('manualTrace').innerHTML=S.traceMeta.filter(Boolean).map(m=>{
+      const run=S.data.steps.find(r=>r.id===m.runId);
+      return `<option value="${esc(m.key)}">${esc(traceName(m.fieldId))}${S.run==='all'?` — ${esc(run.name)}`:''}</option>`;
+    }).join('');
+    if(S.traceMeta.some(m=>m?.key===prior))$('manualTrace').value=prior;
+  }
+  function nearestPoint(){
+    const x=LTParser.numeric($('manualX').value);
+    if(!finite(x)){notify('Enter a valid numeric X value. Examples: 0.0025, 2.5m, 100k.','error');return;}
+    const key=$('manualTrace').value;
+    const meta=S.traceMeta.find(m=>m.key===key);
+    if(!meta)return;
+    const run=S.data.steps.find(r=>r.id===meta.runId);
+    let bestIndex=null,bestDistance=Infinity;
+    const xs=run.columns[S.xId],ys=run.columns[meta.fieldId];
+    for(const i of meta.indices){const dist=Math.abs(xs[i]-x);if(dist<bestDistance&&finite(ys[i])){bestDistance=dist;bestIndex=i;}}
+    if(bestIndex!==null){addCursor(meta.runId,meta.fieldId,bestIndex);$('manualX').value='';}
+  }
+  function renderCursorList(){
+    if(!S.cursors.length){$('cursorList').innerHTML='<div class="no-cursors">No cursors added yet.</div>';return;}
+    $('cursorList').innerHTML=S.cursors.map(c=>{
+      const run=S.data.steps.find(r=>r.id===c.runId);
+      const x=run?.columns[S.xId]?.[c.index],y=run?.columns[c.fieldId]?.[c.index];
+      return `<div class="cursor-item"><div class="cursor-index">C${c.id}</div><div class="cursor-info"><strong>${esc(traceName(c.fieldId))}</strong><small>${esc(run?.name||'')} · x = ${esc(formatValue(x))}, y = ${esc(formatValue(y))}</small><input type="text" data-comment="${c.id}" maxlength="280" value="${esc(c.comment)}" placeholder="Enter a measurement comment and press Enter"></div><button type="button" class="cursor-delete" data-remove="${c.id}" title="Remove cursor" aria-label="Remove cursor C${c.id}">×</button></div>`;
+    }).join('');
+    $('cursorList').querySelectorAll('[data-comment]').forEach(input=>input.addEventListener('keydown',e=>{
+      if(e.key==='Enter'){
+        e.preventDefault();const cursor=S.cursors.find(c=>c.id===Number(input.dataset.comment));
+        if(cursor){cursor.comment=input.value.trim();render();} input.blur();
+      }
+    }));
+    $('cursorList').querySelectorAll('[data-remove]').forEach(btn=>btn.addEventListener('click',()=>{S.cursors=S.cursors.filter(c=>c.id!==Number(btn.dataset.remove));render();}));
+  }
+
+  function applyLabels(){
+    S.labels={title:$('titleInput').value,subtitle:$('subtitleInput').value,x:$('xLabelInput').value,y:$('yLabelInput').value};
+    $('latexStatus').textContent='✓ Labels applied. LaTeX math is rendered where supported.';
+    render();
+  }
+  function filenameStem(){return (S.data?.filename||'ltspice_plot').replace(/\.[^.]+$/,'').replace(/[^\w-]+/g,'_').slice(0,70)||'ltspice_plot';}
+  function downloadBlob(blob,name){const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2500);}
+  function downloadImage(format){
+    if(!S.plotReady)return;
+    const width=Math.max(1100,Math.round($('plot').offsetWidth*1.6));
+    Plotly.downloadImage($('plot'),{format,filename:filenameStem()+'_figure',width,height:760,scale:format==='png'?2:1}).catch(e=>notify('Export failed: '+e.message,'error'));
+  }
+  function saveSetup(){
+    if(!S.data)return;
+    const cfg={format:'LTspiceSimulationPlotter',version:1,sourceFilename:S.data.filename,fieldNames:S.data.fields.map(f=>({id:f.id,name:f.name})),mode:S.mode,xId:S.xId,selectedY:S.selectedY,run:S.run,legends:S.legends,labels:S.labels,cursors:S.cursors,display:{xScale:$('xScale').value,yScale:$('yScale').value,markers:$('markers').checked,grid:$('gridToggle').checked,legend:$('legendToggle').checked}};
+    downloadBlob(new Blob([JSON.stringify(cfg,null,2)],{type:'application/json'}),filenameStem()+'_plot_setup.json');
+  }
+  function loadSetup(cfg){
+    if(!S.data){notify('Import the matching LTspice data file before loading a saved setup.','error');return;}
+    if(cfg?.format!=='LTspiceSimulationPlotter'||cfg.version!==1){notify('This JSON is not a supported plotter setup.','error');return;}
+    const ids=new Set(S.data.fields.map(f=>f.id));
+    if(cfg.fieldNames && cfg.fieldNames.some(f=>!ids.has(f.id)||byId(f.id)?.name!==f.name)){
+      notify('The setup does not match this file’s arrays. Import the matching data first.','error',0);return;
+    }
+    S.mode=cfg.mode==='multiple'?'multiple':'single';
+    S.xId=ids.has(cfg.xId)?cfg.xId:defaultX();
+    S.selectedY=(cfg.selectedY||[]).filter(id=>ids.has(id)&&id!==S.xId);
+    if(S.mode==='single')S.selectedY=S.selectedY.slice(0,1);
+    S.run=cfg.run==='all'&&S.data.steps.length>1?'all':S.data.steps.some(r=>r.id===cfg.run)?cfg.run:'run0';
+    for(const f of S.data.fields)if(cfg.legends?.[f.id])S.legends[f.id]={name:String(cfg.legends[f.id].name||f.name),color:/^#[0-9a-f]{6}$/i.test(cfg.legends[f.id].color)?cfg.legends[f.id].color:S.legends[f.id].color};
+    for(const k of ['title','subtitle','x','y']){S.labels[k]=String(cfg.labels?.[k]??S.labels[k]).slice(0,300);}
+    S.cursors=(Array.isArray(cfg.cursors)?cfg.cursors:[]).filter(c=>S.selectedY.includes(c.fieldId)&&S.data.steps.some(r=>r.id===c.runId&&Number.isInteger(c.index)&&c.index>=0&&c.index<r.rowCount)).slice(0,80).map((c,i)=>({id:i+1,runId:c.runId,fieldId:c.fieldId,index:c.index,comment:String(c.comment||'').slice(0,280)}));
+    S.nextCursor=S.cursors.length+1;
+    $('titleInput').value=S.labels.title;$('subtitleInput').value=S.labels.subtitle;$('xLabelInput').value=S.labels.x;$('yLabelInput').value=S.labels.y;
+    $('xScale').value=cfg.display?.xScale==='log'?'log':'linear';$('yScale').value=cfg.display?.yScale==='log'?'log':'linear';$('markers').checked=Boolean(cfg.display?.markers);$('gridToggle').checked=cfg.display?.grid!==false;$('legendToggle').checked=cfg.display?.legend!==false;
+    S.revision++;rebuildControls();render();notify('Plot setup restored.');
+  }
+
+  function transientSample(){
+    const rows=['time\tV(dac)\tV(amplifier)\tV(reference)\tV(comparator)'];
+    for(let i=0;i<=240;i++){
+      const t=i*0.0001,code=Math.floor(t/0.0015)%16,dac=5*code/16,amp=2*dac,reference=7,comp=amp>reference?13.5:-13.5;
+      rows.push([t.toExponential(8),dac.toFixed(6),amp.toFixed(6),reference.toFixed(2),comp.toFixed(2)].join('\t'));
+    }
+    return rows.join('\n');
+  }
+  function acSample(){
+    const lines=['Freq.\tV(out)\tV(in)'];
+    for(let i=0;i<=130;i++){
+      const f=Math.pow(10,i/130*6),ratio=f/10000,mag=1/Math.sqrt(1+ratio*ratio),phase=-Math.atan(ratio)*180/Math.PI,db=20*Math.log10(mag);
+      lines.push(`${f.toExponential(10)}\t(${db.toExponential(10)}dB,${phase.toExponential(9)}°)\t(0.000000e+0dB,0.000000e+0°)`);
+    }
+    return lines.join('\n');
+  }
+  function readUserFile(file){
+    if(!file)return;
+    if(file.size>70*1024*1024){notify('The selected file is larger than 70 MB. Export a shorter time span or fewer traces.','error',0);return;}
+    if(/\.raw$/i.test(file.name)){notify('Please use File → Export data as text in LTspice. Binary .raw files are not supported.','error',0);return;}
+    const reader=new FileReader();reader.onload=()=>loadData(String(reader.result),file.name);
+    reader.onerror=()=>notify('The file could not be read.','error',0);
+    reader.readAsText(file);
+  }
+  function attachEvents(){
+    $('fileInput').addEventListener('change',e=>{readUserFile(e.target.files?.[0]);e.target.value='';});
+    const drop=$('dropzone');
+    for(const event of ['dragover','dragenter'])drop.addEventListener(event,e=>{e.preventDefault();drop.classList.add('dragging');});
+    for(const event of ['dragleave','dragend'])drop.addEventListener(event,e=>{e.preventDefault();drop.classList.remove('dragging');});
+    drop.addEventListener('drop',e=>{e.preventDefault();drop.classList.remove('dragging');readUserFile(e.dataTransfer?.files?.[0]);});
+    $('demoTransient').addEventListener('click',()=>loadData(transientSample(),'EXAMPLE_transient.txt'));
+    $('demoAC').addEventListener('click',()=>loadData(acSample(),'EXAMPLE_AC.txt'));
+    $('runSelect').addEventListener('change',e=>{S.run=e.target.value;S.cursors=S.cursors.filter(c=>S.run==='all'||c.runId===S.run);S.revision++;render();});
+    $('xSelect').addEventListener('change',e=>{
+      S.xId=e.target.value;S.selectedY=S.selectedY.filter(id=>id!==S.xId);
+      if(S.mode==='single'&&!S.selectedY.length)S.selectedY=[defaultY()].filter(Boolean);
+      S.cursors=[];S.revision++;S.labels.x=defaultXLabel(byId(S.xId));$('xLabelInput').value=S.labels.x;
+      rebuildTraceOptions();rebuildLegends();render();
+    });
+    document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>{
+      S.mode=b.dataset.mode;
+      if(S.mode==='single'&&S.selectedY.length>1)S.selectedY=S.selectedY.slice(0,1);
+      S.cursors=S.cursors.filter(c=>S.selectedY.includes(c.fieldId));
+      S.revision++;rebuildControls();render();
+    }));
+    document.querySelectorAll('.label-input').forEach(input=>input.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();applyLabels();input.blur();}}));
+    $('applyLabels').addEventListener('click',applyLabels);
+    for(const id of ['xScale','yScale','markers','gridToggle','legendToggle'])$(id).addEventListener('change',()=>{S.revision++;render();});
+    $('armCursor').addEventListener('click',()=>setArmed(!S.armed));
+    $('pinAtX').addEventListener('click',nearestPoint);
+    $('manualX').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();nearestPoint();}});
+    $('exportPNG').addEventListener('click',()=>downloadImage('png'));
+    $('exportSVG').addEventListener('click',()=>downloadImage('svg'));
+    $('saveConfig').addEventListener('click',saveSetup);
+    $('loadConfig').addEventListener('change',e=>{
+      const file=e.target.files?.[0];if(!file)return;
+      file.text().then(t=>{try{loadSetup(JSON.parse(t));}catch(err){notify('Could not read JSON setup: '+err.message,'error');}});
+      e.target.value='';
+    });
+  }
+  attachEvents();
+})();
+
+</script>
+</body>
+</html>
