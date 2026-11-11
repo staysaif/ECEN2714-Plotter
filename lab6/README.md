@@ -16,3 +16,5 @@ CSV formats supported:
 Measurements use `Vin_Vpp`, `Vout_Vpp` and `Phase_deg` (CH2 − CH1). Optional `Gain_dB` can be supplied, but voltage-derived gain takes precedence. Extra frequencies are accepted; the two filters can use different frequency sets.
 
 The synthetic example is intentionally 10 GHz (LPF) and 12 GHz (HPF) to distinguish it from real lab measurements. All processing runs locally; data are not uploaded to any server.
+
+Excel compatibility: the plotter accepts the original downloaded two-table CSV and an Excel-re-saved CSV containing extra trailing empty comma-separated columns after section labels, headers, and measurement rows. Quoted CSV fields and UTF-8 BOM are also supported. Nonempty unexpected cells after a section label are not treated as padding.

@@ -29,7 +29,7 @@ main{padding:24px 18px 40px}.card{background:white;border:1px solid var(--line);
 <h2>Import measurements</h2>
 <div class="toolbar"><a class="btn" href="./ECEN2714_Lab6_CSV_Template.csv" download="ECEN2714_Lab6_CSV_Template.csv">Download CSV Template</a><label class="file-label alt" for="csvInput">Choose CSV file(s)<input id="csvInput" type="file" accept=".csv,text/csv" multiple></label><button class="btn light" type="button" id="demoBtn">Load Synthetic Example (10/12 GHz)</button><button class="btn light" type="button" id="resetBtn">Reset</button></div>
 <div class="drop" id="drop" tabindex="0"><strong>Drop CSV file(s) here</strong><span class="statusline">Upload one combined two-table CSV, or select both separate LPF and HPF measurement CSV files.</span><div id="loadedNames" class="statusline"></div></div>
-<p class="small">Accepted formats: labeled tables <code>RC_LPF</code> and <code>RC_HPF</code>, or individual measurement CSVs with <code>lpf</code> or <code>hpf</code> in their file names. Frequencies may differ between filters. The synthetic demonstration uses deliberately unrealistic 10 GHz and 12 GHz cutoffs and is not measured data.</p>
+<p class="small">Accepted formats: labeled tables <code>RC_LPF</code> and <code>RC_HPF</code>, or individual measurement CSVs with <code>lpf</code> or <code>hpf</code> in their file names. <strong>Files opened and saved in Excel are supported, including extra trailing empty columns/commas.</strong> The original template works too. Frequencies may differ between filters. The synthetic demonstration uses deliberately unrealistic 10 GHz and 12 GHz cutoffs and is not measured data.</p>
 <div id="messages" role="status" aria-live="polite"></div>
 </section>
 <section class="card hidden" id="controlsSection">
@@ -53,6 +53,10 @@ let state={series:{},demo:false,plots:[]};
 function cleanHeader(x){return String(x??'').trim().toLowerCase().replace(/[^a-z0-9]/g,'')}
 function headerIndices(row){let index={};row.forEach((cell,i)=>{const k=cleanHeader(cell);if(['frequencyhz','frequency','fhz'].includes(k))index.f=i;if(['vinvpp','vinpp'].includes(k))index.vin=i;if(['voutvpp','voutpp'].includes(k))index.vout=i;if(['phasedeg','phasedegrees','phase'].includes(k))index.phase=i;if(['gaindb','gainindb'].includes(k))index.gain=i});return index}
 function csvRows(raw){let rows=[],row=[],val='',quoted=false;raw=raw.replace(/^\uFEFF/,'');for(let i=0;i<raw.length;i++){const c=raw[i];if(c==='"'){if(quoted&&raw[i+1]==='"'){val+='"';i++}else quoted=!quoted}else if(c===','&&!quoted){row.push(val.trim());val=''}else if((c==='\r'||c==='\n')&&!quoted){if(c==='\r'&&raw[i+1]==='\n')i++;row.push(val.trim());if(row.some(x=>x!==''))rows.push(row);row=[];val=''}else val+=c}if(quoted)throw Error('An unmatched quotation mark was found.');row.push(val.trim());if(row.some(x=>x!==''))rows.push(row);return rows}
+// Excel can pad section labels, headers, and data rows with extra empty CSV cells.
+// Only a recognized label with no nonempty cells after it starts a new table.
+function emptyTail(row){return row.slice(1).every(cell=>String(cell??'').trim()==='')}
+function circuitSection(row){const id=String(row[0]??'').trim();return emptyTail(row)&&['RC_LPF','RC_HPF','RL_LPF','RL_HPF'].includes(id)}
 function fmtHz(f){if(!Number.isFinite(f))return '—';if(f>=1e12)return Number((f/1e12).toFixed(3))+' THz';if(f>=1e9)return Number((f/1e9).toFixed(3))+' GHz';if(f>=1e6)return Number((f/1e6).toFixed(3))+' MHz';if(f>=1e3)return Number((f/1e3).toFixed(3))+' kHz';return Number(f.toFixed(3))+' Hz'}
 const fmt=(n,d=3)=>Number.isFinite(n)?Number(n.toFixed(d)).toString():'—';
 function num(raw,positive=false){if(raw===undefined||raw===null||String(raw).trim()==='')return null;const x=Number(String(raw).trim());return Number.isFinite(x)&&(!positive||x>0)?x:null}
@@ -60,7 +64,7 @@ function report(message,level='good'){const element=document.createElement('div'
 function reset(){state={series:{},demo:false,plots:[]};['controlsSection','resultsSection','plotsSection','tablesSection'].forEach(id=>$(id).classList.add('hidden'));['messages','plotGrid','metrics','tables'].forEach(id=>$(id).replaceChildren());$('loadedNames').textContent='';$('csvInput').value='';$('selectLPF').checked=true;$('selectHPF').checked=true;document.querySelector('input[name="mode"][value="both"]').checked=true}
 function detectType(name){const n=name.toLowerCase();if(/(?:^|[^a-z])lpf(?:[^a-z]|$)/.test(n)||n.includes('lowpass')||n.includes('low_pass'))return 'RC_LPF';if(/(?:^|[^a-z])hpf(?:[^a-z]|$)/.test(n)||n.includes('highpass')||n.includes('high_pass'))return 'RC_HPF';return null}
 function extractTable(rows,head,data){const idx=headerIndices(head);if(idx.f===undefined)throw Error('Frequency column was not found.');return data.map((r)=>({fText:r[idx.f]??'',vinText:r[idx.vin]??'',voutText:r[idx.vout]??'',phaseText:r[idx.phase]??'',gainText:r[idx.gain]??''}))}
-function extractSource(text,name){const rows=csvRows(text),result={},warnings=[];if(!rows.length)throw Error('The file is empty.');let isDemo=rows[0].length===1&&rows[0][0]===DEMO_MARKER;if(isDemo)rows.shift();
+function extractSource(text,name){const rows=csvRows(text),result={},warnings=[];if(!rows.length)throw Error('The file is empty.');let isDemo=String(rows[0][0]??'').trim()===DEMO_MARKER&&emptyTail(rows[0]);if(isDemo)rows.shift();
   // Wide-format CSVs with circuit-prefixed columns.
   const firstIndex=headerIndices(rows[0]??[]);
   if(firstIndex.f!==undefined&&rows[0].some(h=>String(h).startsWith('RC_LPF_')||String(h).startsWith('RC_HPF_'))){
@@ -69,7 +73,7 @@ function extractSource(text,name){const rows=csvRows(text),result={},warnings=[]
   // Two vertically stacked labeled tables, each with its own frequency axis.
   let active=null,sectionsSeen=false,header=null,contents=[];
   function flush(){if(active&&header&&CIRCUITS.some(c=>c.id===active)){if(result[active])warnings.push('Repeated '+active+' table: last table used.');result[active]=extractTable(rows,header,contents)}header=null;contents=[]}
-  for(const row of rows){const first=String(row[0]??'').trim();if(row.length===1&&headerIndices(row).f===undefined){flush();active=CIRCUITS.some(c=>c.id===first)?first:null;sectionsSeen=true;continue}
+  for(const row of rows){const first=String(row[0]??'').trim();if(circuitSection(row)){flush();active=CIRCUITS.some(c=>c.id===first)?first:null;sectionsSeen=true;continue}
     if(!sectionsSeen)continue;if(!active)continue;
     if(!header){if(headerIndices(row).f!==undefined)header=row;else warnings.push('Skipped an invalid header after '+active+'.');}
     else contents.push(row);
